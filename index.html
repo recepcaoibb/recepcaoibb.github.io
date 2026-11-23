@@ -128,10 +128,14 @@
       if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
       return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
     };
-    const telOk = (v) => /^\([1-9]\d\) 9\d{4}-\d{4}$/.test(v);
+    // Os 8 dígitos depois do 9 não podem ser todos iguais, ex.: (41) 99999-9999 ou (41) 91111-1111.
+    const telRepetido = (v) => /^(\d)\1{7}$/.test(String(v ?? '').replace(/\D/g, '').slice(3));
+    const telOk = (v) => /^\([1-9]\d\) 9\d{4}-\d{4}$/.test(v) && !telRepetido(v);
     function mascTel(el) { el.value = fmtTel(el.value); }
     const TEL_ATTR = 'type="tel" inputmode="numeric" maxlength="15" placeholder="(xx) 9xxxx-xxxx" oninput="mascTel(this)"';
-    const TEL_MSG = 'Telefone inválido. Use o formato (xx) 9xxxx-xxxx: DDD + celular com 9 dígitos começando por 9.';
+    const telMsg = (v) => telRepetido(v) && /^\([1-9]\d\) 9\d{4}-\d{4}$/.test(v)
+      ? 'Telefone inválido: os 8 dígitos depois do 9 não podem ser todos iguais.'
+      : 'Telefone inválido. Use o formato (xx) 9xxxx-xxxx: DDD + celular com 9 dígitos começando por 9.';
     const setoresPessoas = () => {
       const m = new Map();
       appState.people.filter((p) => p.ativo && p.setor).forEach((p) => { if (!m.has(norm(p.setor))) m.set(norm(p.setor), p.setor.trim()); });
@@ -403,7 +407,7 @@
       const tel = $('#pt').value.trim();
       const setor = $('#ps').value.trim();
       if (!nome || !tel || !setor) return alert('Preencha nome, telefone e setor/ministério.');
-      if (!telOk(tel)) return alert(TEL_MSG);
+      if (!telOk(tel)) return alert(telMsg(tel));
       if (id) Object.assign(appState.people.find((x) => x.id == id), { nome, tel, setor });
       else appState.people.push({ id: nid(), nome, tel, setor, ativo: 1 });
       saveData(); closeModal(); draw();
@@ -572,7 +576,7 @@
         const tel = $('#nt').value.trim();
         const setor = $('#ns').value.trim();
         if (!nome || !tel || !setor) return alert('Preencha nome, telefone e setor/ministério.');
-        if (!telOk(tel)) return alert(TEL_MSG);
+        if (!telOk(tel)) return alert(telMsg(tel));
         pessoa = { id: nid(), nome, tel, setor, ativo: 1 };
         appState.people.push(pessoa);
       }
