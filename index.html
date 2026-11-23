@@ -48,7 +48,10 @@
     .sel { background:var(--bg); border:1px solid var(--ok); border-radius:8px; padding:8px; margin-top:8px; }
     .ov { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:flex-start; justify-content:center; padding:5vh 12px; overflow:auto; z-index:20; }
     .md { background:var(--card); border-radius:14px; padding:18px; width:100%; max-width:520px; border:1px solid var(--bd); }
-    .md h3 { margin:0 0 6px; }
+    .md h3 { margin:0 0 6px; padding-right:32px; }
+    .md { position:relative; }
+    .md button.mx { position:absolute; top:8px; right:8px; border:0; background:none; padding:4px 10px; font-size:22px; line-height:1; color:var(--mu); opacity:.45; }
+    .md button.mx:hover, .md button.mx:focus-visible { opacity:.9; }
     .act { display:flex; gap:8px; justify-content:flex-end; margin-top:14px; }
     .hero { background:var(--pr); color:var(--pt); border-radius:16px; padding:24px 26px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; }
     .hero h2 { margin:0; font-size:26px; }
@@ -497,12 +500,14 @@
     }
 
     function reg() {
-      modal(`<h3>Registrar</h3><input id="q" placeholder="Buscar item pela descrição ou código" oninput="rs()"><div id="res"></div><div class="act"><button onclick="closeModal()">Fechar</button></div>`);
+      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar sem registrar" title="Fechar">×</button><h3>Registrar</h3><input id="q" placeholder="Digite a descrição ou o código do item" autocomplete="off" oninput="rs()"><div id="res"></div><div class="act"><button onclick="closeModal()">Fechar</button></div>`);
       rs(); $('#q').focus();
     }
     function rs() {
-      const q = $('#q').value.toLowerCase();
-      const list = appState.items.filter((i) => i.ativo && (i.desc + ' ' + i.cod).toLowerCase().includes(q)).slice(0, 20);
+      const q = norm($('#q').value);
+      // Lista fica oculta até a pessoa digitar algo na busca.
+      if (!q) { $('#res').innerHTML = '<p class="mu" style="margin:10px 2px">Digite na busca para encontrar o item.</p>'; return; }
+      const list = appState.items.filter((i) => i.ativo && norm(i.desc + ' ' + i.cod).includes(q)).slice(0, 20);
       $('#res').innerHTML = list.map((i) => {
         const itemLoan = lo(i.id);
         return `<div class="row"><div><b>${esc(i.desc)}</b> <small class="mu">${esc(i.cod)} · ${esc(i.setor)}</small>${i.restr ? ' <span class="tag wn">Restrito</span>' : ''}<br>${itemLoan ? `<span class="tag rd">Emprestado a ${esc(itemLoan.pNome)} desde ${dt(itemLoan.out)}</span>` : '<span class="tag ok">Disponível</span>'}</div>${itemLoan ? `<button onclick="dev(${itemLoan.id})">Devolver</button>` : `<button class="p" onclick="emp(${i.id})">Emprestar</button>`}</div>`;
@@ -524,7 +529,7 @@
     function emp(itemId) {
       const item = appState.items.find((x) => x.id == itemId);
       appState.r = { item, p: null, np: false };
-      modal(`<h3>Emprestar: ${esc(item.desc)}</h3>${item.restr ? '<p class="tag wn">Item restrito: apenas pessoas autorizadas</p>' : ''}<input id="pq" placeholder="Pessoa (digite o nome)" oninput="ps()"><div id="pr"></div><div id="sl"></div><div id="nf"></div><label>Observação (opcional)<input id="obx"></label><div class="act"><button onclick="reg()">Voltar</button><button class="p" onclick="salvar()">Salvar</button></div>`);
+      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar sem registrar" title="Fechar">×</button><h3>Emprestar: ${esc(item.desc)}</h3>${item.restr ? '<p class="tag wn">Item restrito: apenas pessoas autorizadas</p>' : ''}<input id="pq" placeholder="Pessoa (digite o nome)" oninput="ps()"><div id="pr"></div><div id="sl"></div><div id="nf"></div><label>Observação (opcional)<input id="obx"></label><div class="act"><button onclick="reg()">Voltar</button><button class="p" onclick="salvar()">Salvar</button></div>`);
       ps(); $('#pq').focus();
     }
     function ps() {
