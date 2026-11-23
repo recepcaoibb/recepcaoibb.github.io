@@ -491,8 +491,7 @@
         <div class="bar">
           ${btn('hoje', 'Hoje')}${btn('semana', 'Semana')}${btn('mes', 'Mês')}${btn('per', 'Período')}${btn('pend', 'Pendentes de devolução')}
           <span class="sp"></span>
-          <button onclick="imp()">🖨 Imprimir</button>
-          <button onclick="exp()">⬇ Exportar</button>
+          <button onclick="exp()">⬇ Exportar PDF</button>
           <button class="p" onclick="reg()">Registrar</button>
         </div>
         ${appState.f === 'per' ? `<div class="bar"><label style="margin:0">De <input type="date" value="${appState.a}" onchange="appState.a=this.value; draw()"></label><label style="margin:0">Até <input type="date" value="${appState.b}" onchange="appState.b=this.value; draw()"></label></div>` : ''}
@@ -690,20 +689,47 @@
       saveData(); closeModal(); draw(); toast('Observação adicionada.');
     }
 
+    // Exportação dos empréstimos em PDF (não editável): gerado no navegador com jsPDF.
+    const carregarScript = (src) => new Promise((ok, falha) => {
+      if (document.querySelector(`script[src="${src}"]`)) return ok();
+      const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = () => falha(new Error(src));
+      document.head.appendChild(el);
+    });
     async function exp() {
-      const columns = ['Item','Código','Setor do item','Pessoa','Telefone','Setor/Ministério','Emprestado em','Devolvido em','Emprestado por (usuário)','Devolução registrada por (usuário)','Observação','Avaria','Descrição da avaria','Status'];
-      const csvQuote = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-      const rows = [columns, ...listFiltrada().map((l) => [l.iDesc, l.iCod, l.iSet, l.pNome, l.pTel, l.pSet, dt(l.out), l.dv ? dt(l.dv) : '', l.userOut, l.userIn, obsList(l).map((o) => dt(o.t) + ' ' + o.u + ': ' + o.x).join(' | '), l.av ? l.av.tipo : '', l.av ? l.av.desc : '', l.dv ? (l.av ? 'Devolvido com avaria' : 'Devolvido') : 'Pendente'])];
-      const text = '\ufeff' + rows.map((r) => r.map(csvQuote).join(';')).join('\r\n');
-      const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'emprestimos-ibb.csv';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(link.href);
-      toast('Arquivo exportado.');
+      const lista = listFiltrada();
+      if (!lista.length) return alert('Nenhum registro neste filtro para exportar.');
+      try {
+        await carregarScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
+        await carregarScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js');
+      } catch (e) {
+        return alert('Não foi possível gerar o PDF. Verifique sua conexão e tente de novo.');
+      }
+      const { jsPDF } = window.jspdf;
+      // Senha de proprietário aleatória: o PDF abre normalmente, mas leitores de PDF bloqueiam edição e cópia.
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4', encryption: { userPassword: '', ownerPassword: crypto.getRandomValues(new Uint32Array(4)).join('-'), userPermissions: ['print'] } });
+      const filtro = { hoje: 'Hoje', semana: 'Semana', mes: 'Mês', per: `Período ${appState.a ? appState.a.split('-').reverse().join('/') : 'início'} a ${appState.b ? appState.b.split('-').reverse().join('/') : 'hoje'}`, pend: 'Pendentes de devolução' }[appState.f];
+      doc.setFontSize(14); doc.text('IBB – Controle de Empréstimos', 10, 12);
+      doc.setFontSize(9); doc.setTextColor(90);
+      doc.text(`Filtro: ${filtro} · ${lista.length} ${lista.length === 1 ? 'registro' : 'registros'} · Emitido em ${dt(now())} por ${appState.user.nome}`, 10, 18);
+      doc.setTextColor(0);
+      doc.autoTable({
+        startY: 22,
+        head: [['Item', 'Código', 'Pessoa', 'Telefone', 'Setor/Ministério', 'Emprestado em', 'Emprestado por', 'Devolvido em', 'Devolução por', 'Avaria', 'Observação', 'Status']],
+        body: lista.map((l) => [l.iDesc, l.iCod, l.pNome, l.pTel, l.pSet, dt(l.out), l.userOut || '', l.dv ? dt(l.dv) : '', l.dv ? (l.userIn || '') : '', l.av ? `${l.av.tipo}: ${l.av.desc}` : '', obsList(l).map((o) => `${dt(o.t)} ${o.u}: ${o.x}`).join(' | '), l.dv ? (l.av ? 'Devolvido com avaria' : 'Devolvido') : 'Pendente']),
+        styles: { fontSize: 7, cellPadding: 1.5, overflow: 'linebreak', valign: 'top' },
+        headStyles: { fillColor: [31, 78, 140], textColor: 255, fontSize: 7 },
+        alternateRowStyles: { fillColor: [244, 245, 247] },
+        margin: { left: 8, right: 8, bottom: 12 },
+        didDrawPage: () => {
+          const n = doc.internal.getNumberOfPages();
+          doc.setFontSize(7); doc.setTextColor(120);
+          doc.text(`Página ${n}`, doc.internal.pageSize.getWidth() - 8, doc.internal.pageSize.getHeight() - 5, { align: 'right' });
+          doc.setTextColor(0);
+        }
+      });
+      const hoje = new Date(now()).toISOString().slice(0, 10);
+      doc.save(`emprestimos-ibb-${hoje}.pdf`);
+      toast('PDF gerado.');
     }
 
     async function imp() {
