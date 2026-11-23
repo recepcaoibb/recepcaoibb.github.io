@@ -43,6 +43,10 @@
     .mu { color:var(--mu); }
     .row { display:flex; gap:10px; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--bd); }
     .r2 { display:flex; gap:8px; margin:8px 0; }
+    textarea { font:inherit; width:100%; padding:9px 10px; border:1px solid var(--bd); border-radius:8px; background:var(--bg); color:var(--tx); resize:vertical; }
+    label.opt { display:flex; align-items:center; gap:8px; font-size:14px; color:var(--tx); }
+    label.opt input { width:auto; margin:0; }
+    .avl { border:1px solid var(--bd); border-left:3px solid var(--rd); border-radius:8px; padding:8px 10px; margin:8px 0; font-size:14px; }
     .chip { display:inline-block; background:var(--bg); border:1px solid var(--bd); border-radius:99px; padding:2px 10px; margin:3px 4px 0 0; font-size:13px; }
     .chip a { cursor:pointer; color:var(--rd); }
     .sel { background:var(--bg); border:1px solid var(--ok); border-radius:8px; padding:8px; margin-top:8px; }
@@ -136,6 +140,9 @@
     const telMsg = (v) => telRepetido(v) && /^\([1-9]\d\) 9\d{4}-\d{4}$/.test(v)
       ? 'Telefone inválido: os 8 dígitos depois do 9 não podem ser todos iguais.'
       : 'Telefone inválido. Use o formato (xx) 9xxxx-xxxx: DDD + celular com 9 dígitos começando por 9.';
+    // Avarias ficam no registro de empréstimo (campo av) e são ligadas à pessoa pelo pId.
+    const TIPOS_AVARIA = ['Item perdido', 'Devolvido parcialmente', 'Danificado', 'Outro'];
+    const avariasDe = (pid) => appState.loans.filter((l) => l.av && l.pId == pid).sort((a, b) => (b.av.t || 0) - (a.av.t || 0));
     const setoresPessoas = () => {
       const m = new Map();
       appState.people.filter((p) => p.ativo && p.setor).forEach((p) => { if (!m.has(norm(p.setor))) m.set(norm(p.setor), p.setor.trim()); });
@@ -379,7 +386,7 @@
       const peopleMode = appState.tab === 'p';
       let html = `<div class="bar"><button class="${peopleMode ? 'on' : ''}" onclick="appState.tab='p'; appState.cq=''; draw()">Pessoas</button><button class="${peopleMode ? '' : 'on'}" onclick="appState.tab='i'; appState.cq=''; draw()">Itens</button><span class="sp"></span><input id="cq" placeholder="Pesquisar…" value="${esc(appState.cq)}" style="max-width:240px" oninput="appState.cq=this.value; draw(); const e=$('#cq'); e.focus(); e.setSelectionRange(999,999)"><select style="width:auto" onchange="appState.cs=this.value; draw()"><option value="a" ${appState.cs === 'a' ? 'selected' : ''}>Ativos</option><option value="i" ${appState.cs === 'i' ? 'selected' : ''}>Inativos</option><option value="t" ${appState.cs === 't' ? 'selected' : ''}>Ativos e inativos</option></select><button onclick="imp()">🖨 Imprimir</button><button class="p" onclick="${peopleMode ? 'pForm()' : 'iForm()'}">＋ Novo</button></div><div class="card tw"><table>`;
       if (peopleMode) {
-        html += '<tr><th>Nome<th>Telefone<th>Setor/Ministério<th>Status<th></tr>' + appState.people.filter(fq).map((p) => `<tr class="${p.ativo ? '' : 'off'}"><td>${esc(p.nome)}<td>${esc(p.tel)}<td>${esc(p.setor)}<td>${p.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="pForm(${p.id})">Editar</button> <button class="d" onclick="tg('people', ${p.id})">${p.ativo ? 'Inativar' : 'Ativar'}</button></tr>`).join('');
+        html += '<tr><th>Nome<th>Telefone<th>Setor/Ministério<th>Avarias<th>Status<th></tr>' + appState.people.filter(fq).map((p) => { const na = avariasDe(p.id).length; return `<tr class="${p.ativo ? '' : 'off'}"><td>${esc(p.nome)}<td>${esc(p.tel)}<td>${esc(p.setor)}<td>${na ? `<button class="d" onclick="pAv(${p.id})">⚠ ${na}</button>` : '<span class="mu">—</span>'}<td>${p.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="pForm(${p.id})">Editar</button> <button class="d" onclick="tg('people', ${p.id})">${p.ativo ? 'Inativar' : 'Ativar'}</button></tr>`; }).join('');
       } else {
         html += '<tr><th>Descrição<th>Código<th>Setor/Ministério<th>Restrito<th>Status<th></tr>' + appState.items.filter(fq).map((i) => `<tr class="${i.ativo ? '' : 'off'}"><td>${esc(i.desc)}<td>${esc(i.cod)}<td>${esc(i.setor)}<td>${i.restr ? `Sim (${autorizadosDe(i).length} autorizados${(i.autSet || []).length ? ' · setores: ' + i.autSet.map(esc).join(', ') : ''})` : 'Não'}<td>${i.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="iForm(${i.id})">Editar</button> <button class="d" onclick="tg('items', ${i.id})">${i.ativo ? 'Inativar' : 'Ativar'}</button></tr>`).join('');
       }
@@ -488,7 +495,7 @@
           <button class="p" onclick="reg()">Registrar</button>
         </div>
         ${appState.f === 'per' ? `<div class="bar"><label style="margin:0">De <input type="date" value="${appState.a}" onchange="appState.a=this.value; draw()"></label><label style="margin:0">Até <input type="date" value="${appState.b}" onchange="appState.b=this.value; draw()"></label></div>` : ''}
-        <div class="card tw"><table><tr><th>Item<th>Pessoa<th>Setor/Ministério<th>Emprestado em<th>Emprestado por<th>Devolvido em<th>Devolução por<th></tr>${lista.map((l) => `<tr><td>${esc(l.iDesc)}<br><small class="mu">${esc(l.iCod)}</small><td>${esc(l.pNome)}<br><small class="mu">${esc(l.pTel)}</small><td>${esc(l.pSet)}<td>${dt(l.out)}<td>${esc(l.userOut || '—')}<td>${l.dv ? dt(l.dv) : '<span class="tag wn">Pendente</span>'}<td>${l.dv ? esc(l.userIn || '—') : '—'}<td><button onclick="obsE(${l.id})" onmouseenter="tip(this,${l.id})" onmouseleave="tipx()">Obs.${obsList(l).length ? ` (${obsList(l).length})` : ''}</button> ${l.dv ? '' : `<button onclick="dev(${l.id})">Devolver</button>`}${isAdmin() ? ` <button class="d" onclick="exE(${l.id})">Excluir</button>` : ''}</tr>`).join('')}</table>${lista.length ? '' : '<p class="mu">Nenhum registro neste filtro.</p>'}</div>
+        <div class="card tw"><table><tr><th>Item<th>Pessoa<th>Setor/Ministério<th>Emprestado em<th>Emprestado por<th>Devolvido em<th>Devolução por<th></tr>${lista.map((l) => `<tr><td>${esc(l.iDesc)}<br><small class="mu">${esc(l.iCod)}</small><td>${esc(l.pNome)}<br><small class="mu">${esc(l.pTel)}</small><td>${esc(l.pSet)}<td>${dt(l.out)}<td>${esc(l.userOut || '—')}<td>${l.dv ? dt(l.dv) : '<span class="tag wn">Pendente</span>'}${l.av ? `<br><span class="tag rd">Avaria: ${esc(l.av.tipo)}</span><br><small>${esc(l.av.desc)}</small>` : ''}<td>${l.dv ? esc(l.userIn || '—') : '—'}<td><button onclick="obsE(${l.id})" onmouseenter="tip(this,${l.id})" onmouseleave="tipx()">Obs.${obsList(l).length ? ` (${obsList(l).length})` : ''}</button> ${l.dv ? '' : `<button onclick="dev(${l.id})">Devolver</button>`}${isAdmin() ? ` <button class="d" onclick="exE(${l.id})">Excluir</button>` : ''}</tr>`).join('')}</table>${lista.length ? '' : '<p class="mu">Nenhum registro neste filtro.</p>'}</div>
       `;
     }
 
@@ -531,16 +538,58 @@
       }).join('') || '<p class="mu">Nenhum item encontrado.</p>';
     }
 
+    // Tela de devolução: devolução normal ou com registro de avaria.
     function dev(id) {
+      const l = appState.loans.find((x) => x.id == id);
+      if (!l) return alert('Registro não encontrado.');
+      if (l.dv) return alert('Este item já foi devolvido.');
+      appState.dvId = l.id;
+      const ant = avariasDe(l.pId).length;
+      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar sem registrar" title="Fechar">×</button><h3>Devolução: ${esc(l.iDesc)}</h3>
+        <p class="mu" style="margin:0 0 8px">${esc(l.iCod)} · ${esc(l.pNome)} (${esc(l.pSet)}) · emprestado em ${dt(l.out)} por ${esc(l.userOut || '—')}</p>
+        ${ant ? `<p class="tag rd" style="margin:0 0 8px">Esta pessoa já tem ${ant} ${ant === 1 ? 'avaria registrada' : 'avarias registradas'}</p>` : ''}
+        <label class="opt"><input type="radio" name="dvt" value="ok" checked onchange="dvA()"> Devolvido sem problemas</label>
+        <label class="opt"><input type="radio" name="dvt" value="av" onchange="dvA()"> Registrar avaria (perdido, devolvido parcialmente, danificado…)</label>
+        <div id="dva"></div>
+        <div class="act"><button class="p" onclick="devS(${l.id})">Confirmar devolução</button></div>`);
+    }
+    function dvA() {
+      const av = document.querySelector('input[name=dvt]:checked').value === 'av';
+      $('#dva').innerHTML = av ? `<label>Tipo de avaria<select id="avt" onchange="dvI()"><option value="">Selecione…</option>${TIPOS_AVARIA.map((t) => `<option>${t}</option>`).join('')}</select></label>
+        <label>Descrição da ocorrência<textarea id="avd" rows="3" placeholder="Ex.: devolveu só 2 das 3 chaves do molho"></textarea></label><div id="avi"></div>
+        <p class="mu" style="font-size:12px;margin:4px 0">A avaria fica registrada no cadastro de ${esc((appState.loans.find((x) => x.id == appState.dvId) || {}).pNome || 'quem pegou o item')}.</p>` : '';
+    }
+    function dvI() {
+      $('#avi').innerHTML = $('#avt').value === 'Item perdido' ? '<label class="opt"><input type="checkbox" id="avx" checked> Inativar o item (não poderá ser emprestado até ser reposto)</label>' : '';
+    }
+    function devS(id) {
       const loan = appState.loans.find((x) => x.id == id);
       if (!loan) return alert('Registro não encontrado.');
-      if (loan.dv) return alert('Este item já foi devolvido.');
+      if (loan.dv) { closeModal(); return alert('Este item já foi devolvido.'); }
+      const comAvaria = (document.querySelector('input[name=dvt]:checked') || {}).value === 'av';
+      if (comAvaria) {
+        const tipo = $('#avt').value;
+        const desc = $('#avd').value.trim();
+        if (!tipo) return alert('Selecione o tipo de avaria.');
+        if (!desc) return alert('Descreva a ocorrência.');
+        loan.av = { tipo, desc, t: now(), u: appState.user.nome };
+        if ($('#avx') && $('#avx').checked) {
+          const item = appState.items.find((i) => i.id == loan.itemId);
+          if (item) item.ativo = 0;
+        }
+      }
       loan.dv = now();
       loan.userIn = appState.user.nome;
-      if ($('#res')) rs();
+      closeModal();
       draw();
       saveData();
-      toast('Devolução registrada.');
+      toast(comAvaria ? 'Devolução registrada com avaria.' : 'Devolução registrada.');
+    }
+    // Lista das avarias de uma pessoa (aberta pelo cadastro de pessoas).
+    function pAv(pid) {
+      const p = appState.people.find((x) => x.id == pid);
+      const lista = avariasDe(pid);
+      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar" title="Fechar">×</button><h3>Avarias: ${esc(p ? p.nome : '')}</h3>${lista.map((l) => `<div class="avl"><b>${esc(l.av.tipo)}</b> · ${esc(l.iDesc)} <small class="mu">${esc(l.iCod)}</small><br>${esc(l.av.desc)}<br><small class="mu">Emprestado em ${dt(l.out)} · avaria registrada em ${dt(l.av.t)} por ${esc(l.av.u)}</small></div>`).join('') || '<p class="mu">Nenhuma avaria registrada.</p>'}`);
     }
 
     function emp(itemId) {
@@ -554,7 +603,7 @@
       const item = appState.r.item;
       let list = appState.people.filter((p) => p.ativo && p.nome.toLowerCase().includes(q));
       if (item.restr) list = list.filter((p) => autorizado(item, p));
-      $('#pr').innerHTML = list.slice(0, 6).map((p) => `<div class="row"><div>${esc(p.nome)} <small class="mu">${esc(p.setor)} · ${esc(p.tel)}</small></div><button onclick="ch(${p.id})">Selecionar</button></div>`).join('') + (item.restr ? (list.length ? '' : '<p class="mu">Nenhuma pessoa autorizada encontrada. Este item não pode ser emprestado a outra pessoa.</p>') : `<div class="row"><span class="mu">Não encontrou?</span><button onclick="np()">＋ Cadastrar nova pessoa</button></div>`);
+      $('#pr').innerHTML = list.slice(0, 6).map((p) => `<div class="row"><div>${esc(p.nome)} <small class="mu">${esc(p.setor)} · ${esc(p.tel)}</small>${avariasDe(p.id).length ? ` <span class="tag rd">⚠ ${avariasDe(p.id).length} ${avariasDe(p.id).length === 1 ? 'avaria' : 'avarias'}</span>` : ''}</div><button onclick="ch(${p.id})">Selecionar</button></div>`).join('') + (item.restr ? (list.length ? '' : '<p class="mu">Nenhuma pessoa autorizada encontrada. Este item não pode ser emprestado a outra pessoa.</p>') : `<div class="row"><span class="mu">Não encontrou?</span><button onclick="np()">＋ Cadastrar nova pessoa</button></div>`);
     }
     function ch(id) {
       const pessoa = appState.people.find((x) => x.id == id);
@@ -615,9 +664,9 @@
     }
 
     async function exp() {
-      const columns = ['Item','Código','Setor do item','Pessoa','Telefone','Setor/Ministério','Emprestado em','Devolvido em','Emprestado por (usuário)','Devolução registrada por (usuário)','Observação','Status'];
+      const columns = ['Item','Código','Setor do item','Pessoa','Telefone','Setor/Ministério','Emprestado em','Devolvido em','Emprestado por (usuário)','Devolução registrada por (usuário)','Observação','Avaria','Descrição da avaria','Status'];
       const csvQuote = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-      const rows = [columns, ...listFiltrada().map((l) => [l.iDesc, l.iCod, l.iSet, l.pNome, l.pTel, l.pSet, dt(l.out), l.dv ? dt(l.dv) : '', l.userOut, l.userIn, obsList(l).map((o) => dt(o.t) + ' ' + o.u + ': ' + o.x).join(' | '), l.dv ? 'Devolvido' : 'Pendente'])];
+      const rows = [columns, ...listFiltrada().map((l) => [l.iDesc, l.iCod, l.iSet, l.pNome, l.pTel, l.pSet, dt(l.out), l.dv ? dt(l.dv) : '', l.userOut, l.userIn, obsList(l).map((o) => dt(o.t) + ' ' + o.u + ': ' + o.x).join(' | '), l.av ? l.av.tipo : '', l.av ? l.av.desc : '', l.dv ? (l.av ? 'Devolvido com avaria' : 'Devolvido') : 'Pendente'])];
       const text = '\ufeff' + rows.map((r) => r.map(csvQuote).join(';')).join('\r\n');
       const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
       const link = document.createElement('a');
