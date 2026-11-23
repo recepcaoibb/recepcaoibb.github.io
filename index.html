@@ -49,6 +49,7 @@
     .avl { border:1px solid var(--bd); border-left:3px solid var(--rd); border-radius:8px; padding:8px 10px; margin:8px 0; font-size:14px; }
     .chip { display:inline-block; background:var(--bg); border:1px solid var(--bd); border-radius:99px; padding:2px 10px; margin:3px 4px 0 0; font-size:13px; }
     .chip a { cursor:pointer; color:var(--rd); }
+    .cart { background:var(--bg); border:1px solid var(--bd); border-radius:8px; padding:8px 10px; margin:8px 0; }
     .sel { background:var(--bg); border:1px solid var(--ok); border-radius:8px; padding:8px; margin-top:8px; }
     .ov { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:flex-start; justify-content:center; padding:5vh 12px; overflow:auto; z-index:20; }
     .md { background:var(--card); border-radius:14px; padding:18px; width:100%; max-width:520px; border:1px solid var(--bd); }
@@ -523,10 +524,23 @@
       }
     }
 
-    function reg() {
-      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar sem registrar" title="Fechar">×</button><h3>Registrar</h3><input id="q" placeholder="Digite a descrição ou o código do item" autocomplete="off" oninput="rs()"><div id="res"></div>`);
-      rs(); $('#q').focus();
+    // Registro de empréstimo: a pessoa monta uma lista de itens (carrinho) e depois escolhe quem vai levar.
+    function reg(manter) {
+      if (!manter) appState.cart = [];
+      appState.cart = (appState.cart || []).filter((id) => appState.items.some((i) => i.id == id && i.ativo && !lo(i.id)));
+      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar sem registrar" title="Fechar">×</button><h3>Registrar</h3><input id="q" placeholder="Digite a descrição ou o código do item" autocomplete="off" oninput="rs()"><div id="cart"></div><div id="res"></div>`);
+      rc(); rs(); $('#q').focus();
     }
+    // Itens já escolhidos para o empréstimo.
+    function rc() {
+      const itens = appState.cart.map((id) => appState.items.find((i) => i.id == id)).filter(Boolean);
+      $('#cart').innerHTML = itens.length ? `<div class="cart"><b>Itens selecionados (${itens.length})</b><div>${itens.map((i) => `<span class="chip">${esc(i.desc)} <small class="mu">${esc(i.cod)}</small>${i.restr ? ' <span class="wn">●</span>' : ''} <a onclick="cartRem(${i.id})" title="Remover">✕</a></span>`).join('')}</div><div class="act" style="margin-top:8px"><button class="p" onclick="emp()">Continuar com ${itens.length} ${itens.length === 1 ? 'item' : 'itens'} →</button></div></div>` : '';
+    }
+    function cartAdd(id) {
+      if (!appState.cart.includes(id)) appState.cart.push(id);
+      $('#q').value = ''; rc(); rs(); $('#q').focus();
+    }
+    function cartRem(id) { appState.cart = appState.cart.filter((x) => x != id); rc(); rs(); }
     function rs() {
       const q = norm($('#q').value);
       // Lista fica oculta até a pessoa digitar algo na busca.
@@ -534,7 +548,7 @@
       const list = appState.items.filter((i) => i.ativo && norm(i.desc + ' ' + i.cod).includes(q)).slice(0, 20);
       $('#res').innerHTML = list.map((i) => {
         const itemLoan = lo(i.id);
-        return `<div class="row"><div><b>${esc(i.desc)}</b> <small class="mu">${esc(i.cod)} · ${esc(i.setor)}</small>${i.restr ? ' <span class="tag wn">Restrito</span>' : ''}<br>${itemLoan ? `<span class="tag rd">Emprestado a ${esc(itemLoan.pNome)} desde ${dt(itemLoan.out)}</span>` : '<span class="tag ok">Disponível</span>'}</div>${itemLoan ? `<button onclick="dev(${itemLoan.id})">Devolver</button>` : `<button class="p" onclick="emp(${i.id})">Emprestar</button>`}</div>`;
+        return `<div class="row"><div><b>${esc(i.desc)}</b> <small class="mu">${esc(i.cod)} · ${esc(i.setor)}</small>${i.restr ? ' <span class="tag wn">Restrito</span>' : ''}<br>${itemLoan ? `<span class="tag rd">Emprestado a ${esc(itemLoan.pNome)} desde ${dt(itemLoan.out)}</span>` : '<span class="tag ok">Disponível</span>'}</div>${itemLoan ? `<button onclick="dev(${itemLoan.id})">Devolver</button>` : (appState.cart.includes(i.id) ? `<button onclick="cartRem(${i.id})">✓ Adicionado</button>` : `<button class="p" onclick="cartAdd(${i.id})">＋ Adicionar</button>`)}</div>`;
       }).join('') || '<p class="mu">Nenhum item encontrado.</p>';
     }
 
@@ -592,18 +606,20 @@
       modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar" title="Fechar">×</button><h3>Avarias: ${esc(p ? p.nome : '')}</h3>${lista.map((l) => `<div class="avl"><b>${esc(l.av.tipo)}</b> · ${esc(l.iDesc)} <small class="mu">${esc(l.iCod)}</small><br>${esc(l.av.desc)}<br><small class="mu">Emprestado em ${dt(l.out)} · avaria registrada em ${dt(l.av.t)} por ${esc(l.av.u)}</small></div>`).join('') || '<p class="mu">Nenhuma avaria registrada.</p>'}`);
     }
 
-    function emp(itemId) {
-      const item = appState.items.find((x) => x.id == itemId);
-      appState.r = { item, p: null, np: false };
-      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar sem registrar" title="Fechar">×</button><h3>Emprestar: ${esc(item.desc)}</h3>${item.restr ? '<p class="tag wn">Item restrito: apenas pessoas autorizadas</p>' : ''}<input id="pq" placeholder="Pessoa (digite o nome)" oninput="ps()"><div id="pr"></div><div id="sl"></div><div id="nf"></div><label>Observação (opcional)<input id="obx"></label><div class="act"><button onclick="reg()">Voltar</button><button class="p" onclick="salvar()">Salvar</button></div>`);
+    function emp() {
+      const itens = appState.cart.map((id) => appState.items.find((i) => i.id == id)).filter(Boolean);
+      if (!itens.length) return alert('Selecione ao menos um item.');
+      appState.r = { itens, p: null, np: false };
+      const restritos = itens.filter((i) => i.restr);
+      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar sem registrar" title="Fechar">×</button><h3>Emprestar ${itens.length} ${itens.length === 1 ? 'item' : 'itens'}</h3><div class="cart">${itens.map((i) => `<div>${esc(i.desc)} <small class="mu">${esc(i.cod)}</small>${i.restr ? ' <span class="tag wn">Restrito</span>' : ''}</div>`).join('')}</div>${restritos.length ? `<p class="tag wn">${restritos.length === 1 ? 'Há 1 item restrito' : `Há ${restritos.length} itens restritos`}: só aparecem pessoas autorizadas para ${restritos.length === 1 ? 'ele' : 'todos eles'}</p>` : ''}<input id="pq" placeholder="Pessoa (digite o nome)" oninput="ps()"><div id="pr"></div><div id="sl"></div><div id="nf"></div><label>Observação (opcional, vale para todos os itens)<input id="obx"></label><div class="act"><button onclick="reg(true)">Voltar</button><button class="p" onclick="salvar()">Salvar</button></div>`);
       ps(); $('#pq').focus();
     }
     function ps() {
       const q = $('#pq').value.toLowerCase();
-      const item = appState.r.item;
+      const restritos = appState.r.itens.filter((i) => i.restr);
       let list = appState.people.filter((p) => p.ativo && p.nome.toLowerCase().includes(q));
-      if (item.restr) list = list.filter((p) => autorizado(item, p));
-      $('#pr').innerHTML = list.slice(0, 6).map((p) => `<div class="row"><div>${esc(p.nome)} <small class="mu">${esc(p.setor)} · ${esc(p.tel)}</small>${avariasDe(p.id).length ? ` <span class="tag rd">⚠ ${avariasDe(p.id).length} ${avariasDe(p.id).length === 1 ? 'avaria' : 'avarias'}</span>` : ''}</div><button onclick="ch(${p.id})">Selecionar</button></div>`).join('') + (item.restr ? (list.length ? '' : '<p class="mu">Nenhuma pessoa autorizada encontrada. Este item não pode ser emprestado a outra pessoa.</p>') : `<div class="row"><span class="mu">Não encontrou?</span><button onclick="np()">＋ Cadastrar nova pessoa</button></div>`);
+      if (restritos.length) list = list.filter((p) => restritos.every((i) => autorizado(i, p)));
+      $('#pr').innerHTML = list.slice(0, 6).map((p) => `<div class="row"><div>${esc(p.nome)} <small class="mu">${esc(p.setor)} · ${esc(p.tel)}</small>${avariasDe(p.id).length ? ` <span class="tag rd">⚠ ${avariasDe(p.id).length} ${avariasDe(p.id).length === 1 ? 'avaria' : 'avarias'}</span>` : ''}</div><button onclick="ch(${p.id})">Selecionar</button></div>`).join('') + (restritos.length ? (list.length ? '' : `<p class="mu">Nenhuma pessoa autorizada encontrada${restritos.length > 1 ? ' para todos os itens restritos selecionados. Se for o caso, faça empréstimos separados' : '. Este item não pode ser emprestado a outra pessoa'}.</p>`) : `<div class="row"><span class="mu">Não encontrou?</span><button onclick="np()">＋ Cadastrar nova pessoa</button></div>`);
     }
     function ch(id) {
       const pessoa = appState.people.find((x) => x.id == id);
@@ -617,8 +633,9 @@
       $('#nf').innerHTML = `<label>Nome<input id="nn" value="${esc($('#pq').value)}"></label><label>Telefone<input id="nt" ${TEL_ATTR}></label><label>Setor/Ministério<input id="ns"></label>`;
     }
     function salvar() {
-      const item = appState.r.item;
-      if (lo(item.id)) { alert('Este item já está emprestado.'); return reg(); }
+      const itens = appState.r.itens;
+      const ocupados = itens.filter((i) => lo(i.id));
+      if (ocupados.length) { alert('Já emprestado: ' + ocupados.map((i) => i.desc).join(', ') + '. Remova da lista.'); return reg(true); }
       let pessoa = appState.r.p;
       if (appState.r.np) {
         const nome = $('#nn').value.trim();
@@ -627,13 +644,23 @@
         if (!nome || !tel || !setor) return alert('Preencha nome, telefone e setor/ministério.');
         if (!telOk(tel)) return alert(telMsg(tel));
         pessoa = { id: nid(), nome, tel, setor, ativo: 1 };
-        appState.people.push(pessoa);
       }
       if (!pessoa) return alert('Selecione ou cadastre a pessoa.');
-      if (item.restr && !autorizado(item, pessoa)) return alert('Pessoa não autorizada para este item restrito.');
-      const obs = $('#obx').value.trim() ? [{ t: now(), u: appState.user.nome, x: $('#obx').value.trim() }] : [];
-      appState.loans.push({ id: nid(), itemId: item.id, iDesc: item.desc, iCod: item.cod, iSet: item.setor, pId: pessoa.id, pNome: pessoa.nome, pTel: pessoa.tel, pSet: pessoa.setor, out: now(), dv: 0, userOut: appState.user.nome, userIn: '', obs });
+      const semAut = itens.filter((i) => i.restr && !autorizado(i, pessoa));
+      if (semAut.length) return alert('Pessoa não autorizada para: ' + semAut.map((i) => i.desc).join(', ') + '.');
+      if (appState.r.np) appState.people.push(pessoa);
+      const texto = $('#obx').value.trim();
+      const out = now();
+      const grp = itens.length > 1 ? nid() : 0; // identifica empréstimos feitos juntos
+      const usados = new Set(appState.loans.map((l) => l.id));
+      itens.forEach((item) => {
+        let id = nid(); while (usados.has(id)) id = nid(); usados.add(id);
+        const obs = texto ? [{ t: out, u: appState.user.nome, x: texto }] : [];
+        appState.loans.push({ id, grp, itemId: item.id, iDesc: item.desc, iCod: item.cod, iSet: item.setor, pId: pessoa.id, pNome: pessoa.nome, pTel: pessoa.tel, pSet: pessoa.setor, out, dv: 0, userOut: appState.user.nome, userIn: '', obs });
+      });
+      appState.cart = [];
       saveData(); closeModal(); draw();
+      toast(itens.length > 1 ? `${itens.length} empréstimos registrados para ${pessoa.nome}.` : 'Empréstimo registrado.');
     }
 
     function obsList(loan) { return Array.isArray(loan.obs) ? loan.obs : (loan.obs ? [{ t: loan.out, u: loan.userOut, x: loan.obs }] : []); }
