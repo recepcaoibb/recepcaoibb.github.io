@@ -284,7 +284,7 @@
               <label>E-mail<input id="lu" type="email" autocomplete="username"></label>
               <label>Senha<input id="lp" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter') entrar()"></label>
               <button class="p" style="width:100%" onclick="entrar()">Entrar</button>
-              <p class="mu" style="font-size:12px"><a href="#" onclick="esqueci(); return false">Esqueci minha senha</a></p>
+              <p class="mu" style="font-size:12px;display:flex;justify-content:space-between"><a href="#" onclick="esqueci(); return false">Esqueci minha senha</a><a href="#" onclick="ajuda(); return false">Ajuda</a></p>
             </div>
           </main>
         `;
@@ -293,7 +293,7 @@
 
       const titleMap = { home: 'Home', cad: 'Cadastro', emp: 'Empréstimos', cfg: 'Configurações' };
       const page = titleMap[appState.view];
-      let html = `<header><h1>IBB · ${page}</h1><small id="clk"></small><small>${esc(appState.user.nome)} (${appState.user.perfil})</small>${appState.view !== 'home' ? '<button onclick="go(\'home\')">Home</button>' : ''}<button onclick="sair()">Sair</button></header><main>`;
+      let html = `<header><h1>IBB · ${page}</h1><small id="clk"></small><small>${esc(appState.user.nome)} (${appState.user.perfil})</small>${appState.view !== 'home' ? '<button onclick="go(\'home\')">Home</button>' : ''}<button onclick="ajuda()" title="Manual do sistema">❔ Ajuda</button><button onclick="sair()">Sair</button></header><main>`;
       html += appState.view === 'home' ? vHome() : appState.view === 'cad' ? vCad() : appState.view === 'emp' ? vEmp() : vCfg();
       $('#app').innerHTML = html + '</main>';
       tick();
@@ -330,6 +330,8 @@
       } catch (e) { /* não revela se o e-mail existe */ }
       toast('Se este e-mail tiver acesso, você receberá um link para criar uma nova senha.');
     }
+    // Manual do sistema (ajuda.html) em nova aba.
+    function ajuda(secao) { window.open('ajuda.html' + (secao ? '#' + secao : ''), '_blank', 'noopener'); }
     function sair() { closeModal(); appState.auth.signOut(); }
 
     const IC = {
