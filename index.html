@@ -120,6 +120,18 @@
     // Pessoa autorizada num item restrito: incluída pelo nome OU pertence a um setor/ministério autorizado.
     const autorizado = (item, p) => !!p && ((item.aut || []).includes(p.id) || (item.autSet || []).some((s) => norm(s) === norm(p.setor)));
     const autorizadosDe = (item) => appState.people.filter((p) => p.ativo && autorizado(item, p));
+    // Telefone no formato (xx) 9xxxx-xxxx: a máscara é aplicada enquanto digita.
+    const fmtTel = (v) => {
+      const d = String(v ?? '').replace(/\D/g, '').slice(0, 11);
+      if (!d) return '';
+      if (d.length <= 2) return '(' + d;
+      if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+      return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+    };
+    const telOk = (v) => /^\([1-9]\d\) 9\d{4}-\d{4}$/.test(v);
+    function mascTel(el) { el.value = fmtTel(el.value); }
+    const TEL_ATTR = 'type="tel" inputmode="numeric" maxlength="15" placeholder="(xx) 9xxxx-xxxx" oninput="mascTel(this)"';
+    const TEL_MSG = 'Telefone inválido. Use o formato (xx) 9xxxx-xxxx: DDD + celular com 9 dígitos começando por 9.';
     const setoresPessoas = () => {
       const m = new Map();
       appState.people.filter((p) => p.ativo && p.setor).forEach((p) => { if (!m.has(norm(p.setor))) m.set(norm(p.setor), p.setor.trim()); });
@@ -384,13 +396,14 @@
 
     function pForm(id) {
       const p = appState.people.find((x) => x.id == id) || {};
-      modal(`<h3>${id ? 'Editar' : 'Nova'} pessoa</h3><label>Nome<input id="pn" value="${esc(p.nome)}"></label><label>Telefone<input id="pt" type="tel" value="${esc(p.tel)}"></label><label>Setor/Ministério<input id="ps" value="${esc(p.setor)}"></label><div class="act"><button onclick="closeModal()">Cancelar</button><button class="p" onclick="pSave(${id || 0})">Salvar</button></div>`);
+      modal(`<h3>${id ? 'Editar' : 'Nova'} pessoa</h3><label>Nome<input id="pn" value="${esc(p.nome)}"></label><label>Telefone<input id="pt" ${TEL_ATTR} value="${esc(fmtTel(p.tel))}"></label><label>Setor/Ministério<input id="ps" value="${esc(p.setor)}"></label><div class="act"><button onclick="closeModal()">Cancelar</button><button class="p" onclick="pSave(${id || 0})">Salvar</button></div>`);
     }
     function pSave(id) {
       const nome = $('#pn').value.trim();
       const tel = $('#pt').value.trim();
       const setor = $('#ps').value.trim();
       if (!nome || !tel || !setor) return alert('Preencha nome, telefone e setor/ministério.');
+      if (!telOk(tel)) return alert(TEL_MSG);
       if (id) Object.assign(appState.people.find((x) => x.id == id), { nome, tel, setor });
       else appState.people.push({ id: nid(), nome, tel, setor, ativo: 1 });
       saveData(); closeModal(); draw();
@@ -548,7 +561,7 @@
     function np() {
       appState.r.p = null; appState.r.np = true;
       $('#sl').innerHTML = '';
-      $('#nf').innerHTML = `<label>Nome<input id="nn" value="${esc($('#pq').value)}"></label><label>Telefone<input id="nt" type="tel"></label><label>Setor/Ministério<input id="ns"></label>`;
+      $('#nf').innerHTML = `<label>Nome<input id="nn" value="${esc($('#pq').value)}"></label><label>Telefone<input id="nt" ${TEL_ATTR}></label><label>Setor/Ministério<input id="ns"></label>`;
     }
     function salvar() {
       const item = appState.r.item;
@@ -559,6 +572,7 @@
         const tel = $('#nt').value.trim();
         const setor = $('#ns').value.trim();
         if (!nome || !tel || !setor) return alert('Preencha nome, telefone e setor/ministério.');
+        if (!telOk(tel)) return alert(TEL_MSG);
         pessoa = { id: nid(), nome, tel, setor, ativo: 1 };
         appState.people.push(pessoa);
       }
