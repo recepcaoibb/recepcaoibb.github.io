@@ -730,7 +730,7 @@
       const z = new Date(now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 16);
       return `
         <div class="bar"><h3 style="margin:0">Usuários</h3><span class="sp"></span><button class="p" onclick="uForm()">＋ Novo usuário</button></div>
-        <div class="card tw"><table><tr><th>Nome<th>E-mail<th>Perfil<th>Status<th></tr>${appState.users.map((u) => `<tr class="${u.ativo ? '' : 'off'}"><td>${esc(u.nome)}<td>${esc(u.login)}<td>${esc(u.perfil)}<td>${u.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="uForm('${esc(u.id)}')">Editar</button> <button class="d" onclick="tg('users', '${esc(u.id)}')">${u.ativo ? 'Inativar' : 'Ativar'}</button></tr>`).join('')}</table></div>
+        <div class="card tw"><table><tr><th>Nome<th>E-mail<th>Perfil<th>Status<th></tr>${appState.users.filter((u) => !u.excluido).map((u) => `<tr class="${u.ativo ? '' : 'off'}"><td>${esc(u.nome)}<td>${esc(u.login)}<td>${esc(u.perfil)}<td>${u.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="uForm('${esc(u.id)}')">Editar</button>${u.id === appState.user.id ? '' : ` <button class="d" onclick="uDelE('${esc(u.id)}')">Excluir</button>`}</tr>`).join('')}</table></div>
         <h3>Data e hora do sistema</h3>
         <div class="card">
           <p class="mu">Hora atual do sistema: <b>${dt(now())}</b>. Os registros de empréstimo e devolução usam este relógio.</p>
@@ -745,6 +745,25 @@
       appState.off = new Date(v).getTime() - Date.now();
       saveData();
       draw();
+    }
+
+    const adminsAtivos = () => appState.users.filter((x) => x.ativo && !x.excluido && x.perfil === 'Admin');
+    // Excluir usuário: some da lista e perde o acesso aos dados na hora (as regras do banco exigem perfil ativo).
+    // A conta de login no Firebase Authentication não pode ser apagada pelo navegador; ela fica sem acesso a nada.
+    function uDelE(id) {
+      const u = appState.users.find((x) => x.id === id);
+      if (!u || !isAdmin()) return;
+      if (u.id === appState.user.id) return alert('Você não pode excluir o próprio usuário.');
+      if (u.perfil === 'Admin' && u.ativo && adminsAtivos().length < 2) return alert('É preciso manter ao menos um Admin.');
+      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar" title="Fechar">×</button><h3>Excluir usuário?</h3><p><b>${esc(u.nome)}</b><br><small class="mu">${esc(u.login)} · ${esc(u.perfil)}</small></p><p class="mu" style="font-size:13px">O usuário sai da lista e perde o acesso ao sistema imediatamente. Os empréstimos que ele registrou continuam com o nome dele.</p><div class="act"><button onclick="closeModal()">Cancelar</button><button class="d" onclick="uDelS('${esc(u.id)}')">Excluir usuário</button></div>`);
+    }
+    async function uDelS(id) {
+      const u = appState.users.find((x) => x.id === id);
+      if (!u || !isAdmin() || u.id === appState.user.id) return;
+      if (u.perfil === 'Admin' && u.ativo && adminsAtivos().length < 2) return alert('É preciso manter ao menos um Admin.');
+      Object.assign(u, { ativo: 0, excluido: 1, excluidoEm: now(), excluidoPor: appState.user.nome });
+      await saveData(); closeModal(); draw();
+      toast('Usuário excluído.');
     }
 
     function uForm(id) {
@@ -782,17 +801,30 @@
       if (id) {
         if (!nome) return alert('Preencha o nome.');
         const user = appState.users.find((x) => x.id === id);
-        if (user.perfil === 'Admin' && perfil !== 'Admin' && appState.users.filter((x) => x.ativo && x.perfil === 'Admin').length < 2) return alert('É preciso manter ao menos um Admin ativo.');
+        if (user.perfil === 'Admin' && perfil !== 'Admin' && adminsAtivos().length < 2) return alert('É preciso manter ao menos um Admin ativo.');
         Object.assign(user, { nome, perfil });
       } else {
         const senha = $('#up').value;
         if (!nome || !login || !senha) return alert('Preencha nome, e-mail e senha.');
-        if (appState.users.some((x) => (x.login || '').toLowerCase() === login)) return alert('Este e-mail já está cadastrado.');
+        const antigo = appState.users.find((x) => (x.login || '').toLowerCase() === login);
+        if (antigo && antigo.ativo && !antigo.excluido) return alert('Este e-mail já está cadastrado.');
         let uid;
         try {
           uid = await criarConta(login, senha);
         } catch (e) {
+          if (e && e.code === 'auth/email-already-in-use' && antigo) {
+            // Usuário excluído antes: a conta de login ainda existe, então o perfil é reativado.
+            Object.assign(antigo, { nome, perfil, ativo: 1, excluido: 0 });
+            await saveData();
+            try { await appState.auth.sendPasswordResetEmail(login); } catch (er) { /* segue */ }
+            closeModal(); draw();
+            return toast('Usuário reativado. Ele pode usar a senha antiga ou o link de nova senha enviado para ' + login + '.');
+          }
           return alert(authMsg(e));
+        }
+        if (antigo) {
+          try { await appState.db.collection('users').doc(antigo.id).delete(); } catch (er) { console.error(er); }
+          appState.users = appState.users.filter((x) => x !== antigo);
         }
         appState.users.push({ id: uid, nome, login, perfil, ativo: 1 });
       }
