@@ -1,2 +1,365 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ajuda – IBB Empréstimos</title></head>
-<body style="font:16px system-ui,sans-serif;margin:40px;color:#1d2330"><h1>Manual em preparação</h1><p>O manual do sistema estará disponível aqui em instantes.</p></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manual do Sistema – IBB Empréstimos</title>
+<style>
+  :root { --bg:#f4f5f7; --card:#fff; --tx:#1d2330; --mu:#5b6375; --pr:#1f4e8c; --bd:#dfe3ea; --ok:#1b7f4b; --wn:#b45309; --rd:#b42318; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--tx); background:var(--bg); }
+  header.top { background:var(--pr); color:#fff; padding:28px 24px; }
+  header.top .in { max-width:1160px; margin:0 auto; }
+  header.top h1 { margin:0 0 4px; font-size:28px; }
+  header.top p { margin:0; opacity:.9; }
+  .wrap { max-width:1160px; margin:0 auto; padding:24px; display:grid; grid-template-columns:250px 1fr; gap:28px; align-items:start; }
+  nav.toc { position:sticky; top:16px; background:var(--card); border:1px solid var(--bd); border-radius:12px; padding:16px; font-size:14px; }
+  nav.toc b { display:block; margin-bottom:8px; }
+  nav.toc ol { margin:0; padding-left:20px; }
+  nav.toc li { margin:4px 0; }
+  nav.toc a { color:var(--tx); text-decoration:none; }
+  nav.toc a:hover { color:var(--pr); text-decoration:underline; }
+  main { min-width:0; }
+  section { background:var(--card); border:1px solid var(--bd); border-radius:12px; padding:24px 28px; margin-bottom:22px; }
+  h2 { margin:0 0 12px; font-size:22px; color:var(--pr); display:flex; align-items:center; gap:10px; }
+  h2 .n { background:var(--pr); color:#fff; border-radius:50%; width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; font-size:15px; flex:none; }
+  h3 { margin:22px 0 8px; font-size:17px; }
+  p { margin:8px 0; }
+  ol.steps { padding-left:22px; }
+  ol.steps li { margin:6px 0; }
+  figure { margin:14px 0 18px; }
+  figure img { display:block; max-width:100%; border:1px solid var(--bd); border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+  figure a { display:inline-block; }
+  figcaption { font-size:13px; color:var(--mu); margin-top:6px; }
+  .btn { display:inline-block; border:1px solid var(--bd); background:#fff; border-radius:7px; padding:1px 8px; font-size:14px; white-space:nowrap; }
+  .btn.p { background:var(--pr); color:#fff; border-color:var(--pr); }
+  .tip, .warn, .rule { border-radius:10px; padding:12px 16px; margin:14px 0; font-size:15px; }
+  .tip { background:#eef4fb; border-left:4px solid var(--pr); }
+  .warn { background:#fdf3e8; border-left:4px solid var(--wn); }
+  .rule { background:#fdecea; border-left:4px solid var(--rd); }
+  .tip b:first-child, .warn b:first-child, .rule b:first-child { display:block; margin-bottom:2px; }
+  table.t { width:100%; border-collapse:collapse; margin:10px 0; font-size:15px; }
+  table.t th, table.t td { text-align:left; border-bottom:1px solid var(--bd); padding:8px; vertical-align:top; }
+  table.t th { background:var(--bg); font-size:13px; text-transform:uppercase; color:var(--mu); }
+  details { border:1px solid var(--bd); border-radius:10px; padding:10px 14px; margin:8px 0; background:#fff; }
+  details summary { cursor:pointer; font-weight:600; }
+  details p { margin:8px 0 2px; }
+  .top-link { font-size:13px; float:right; color:var(--mu); }
+  footer { text-align:center; color:var(--mu); font-size:13px; padding:10px 0 30px; }
+  @media (max-width: 860px) { .wrap { grid-template-columns:1fr; } nav.toc { position:static; } section { padding:18px; } }
+  @media print {
+    body { background:#fff; }
+    header.top { background:#fff; color:var(--tx); border-bottom:2px solid var(--pr); padding:10px 0; }
+    nav.toc, .top-link { display:none; }
+    .wrap { display:block; padding:0; }
+    section { border:0; padding:0; margin-bottom:18px; break-inside:auto; }
+    figure { break-inside:avoid; }
+    figure img { max-width:80%; box-shadow:none; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="in">
+    <h1>Manual do Sistema de Empréstimos – Recepção IBB</h1>
+    <p>Guia para as recepcionistas: como registrar empréstimos e devoluções de chaves, controles e equipamentos.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Sumário">
+    <b>Sumário</b>
+    <ol>
+      <li><a href="#sobre">Sobre o sistema</a></li>
+      <li><a href="#entrar">Entrar e sair</a></li>
+      <li><a href="#inicio">Tela inicial</a></li>
+      <li><a href="#emprestar">Registrar empréstimo</a></li>
+      <li><a href="#devolver">Registrar devolução</a></li>
+      <li><a href="#avaria">Avarias</a></li>
+      <li><a href="#consultar">Consultar empréstimos</a></li>
+      <li><a href="#observacoes">Observações</a></li>
+      <li><a href="#pdf">Exportar PDF</a></li>
+      <li><a href="#pessoas">Cadastro de pessoas</a></li>
+      <li><a href="#itens">Cadastro de itens</a></li>
+      <li><a href="#regras">Regras importantes</a></li>
+      <li><a href="#duvidas">Dúvidas frequentes</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- 1 -->
+    <section id="sobre">
+      <h2><span class="n">1</span>Sobre o sistema</h2>
+      <p>O sistema registra <b>quem retirou</b> cada chave, controle ou equipamento da recepção, <b>quando</b> retirou e <b>quando devolveu</b>. Ele substitui o controle em papel e funciona pela internet, no endereço:</p>
+      <p style="font-size:18px"><b>https://recepcaoibb.github.io</b></p>
+      <p>Tudo o que uma recepcionista registra aparece <b>na hora</b> para as outras, em qualquer computador. Não é preciso atualizar a página.</p>
+      <h3>Perfis de acesso</h3>
+      <table class="t">
+        <tr><th>Perfil</th><th>O que pode fazer</th></tr>
+        <tr><td><b>Recepção</b></td><td>Registrar empréstimos e devoluções, registrar avarias, consultar e exportar o histórico, cadastrar e editar pessoas e itens.</td></tr>
+        <tr><td><b>Admin</b></td><td>Tudo o que a Recepção faz e, além disso: criar e excluir usuários, ajustar a hora do sistema e excluir registros de empréstimo feitos por engano.</td></tr>
+      </table>
+      <p>Este manual descreve as funções do perfil <b>Recepção</b>.</p>
+    </section>
+
+    <!-- 2 -->
+    <section id="entrar">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">2</span>Entrar e sair do sistema</h2>
+      <figure><img src="ajuda/01-login.jpg" alt="Tela de login com campos E-mail e Senha" width="300"><figcaption>Tela de entrada (login).</figcaption></figure>
+      <ol class="steps">
+        <li>Abra o endereço <b>recepcaoibb.github.io</b> no navegador.</li>
+        <li>Digite o seu <b>e-mail</b> e a sua <b>senha</b>.</li>
+        <li>Clique em <span class="btn p">Entrar</span> (ou aperte <b>Enter</b>).</li>
+      </ol>
+      <h3>Esqueci minha senha</h3>
+      <ol class="steps">
+        <li>Na tela de entrada, digite o seu e-mail no campo <b>E-mail</b>.</li>
+        <li>Clique em <b>Esqueci minha senha</b>.</li>
+        <li>Abra o seu e-mail: chegará uma mensagem com um link para criar uma senha nova. Se não aparecer, olhe também a caixa de spam.</li>
+      </ol>
+      <h3>Sair e Ajuda</h3>
+      <figure><img src="ajuda/00-cabecalho.jpg" alt="Canto superior direito com data, nome do usuário e botões Ajuda e Sair" width="420"><figcaption>No alto da tela: data e hora, seu nome e perfil, e os botões Ajuda e Sair.</figcaption></figure>
+      <p>O botão <span class="btn">Ajuda</span> abre este manual. O botão <span class="btn">Sair</span> encerra o seu acesso.</p>
+      <div class="warn"><b>Importante</b>Os computadores da recepção são compartilhados. Sempre clique em <b>Sair</b> ao terminar o seu turno, para que ninguém faça registros no seu nome.</div>
+    </section>
+
+    <!-- 3 -->
+    <section id="inicio">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">3</span>Tela inicial</h2>
+      <figure><a href="ajuda/02-home.jpg" target="_blank"><img src="ajuda/02-home.jpg" alt="Tela inicial com saudação, indicadores e lista de itens aguardando devolução"></a><figcaption>Tela inicial (Home). Clique na imagem para ampliar.</figcaption></figure>
+      <table class="t">
+        <tr><th>Parte da tela</th><th>Para que serve</th></tr>
+        <tr><td><span class="btn">Registrar empréstimo</span></td><td>Atalho para fazer um novo empréstimo (veja a seção <a href="#emprestar">4</a>).</td></tr>
+        <tr><td><b>Aguardando devolução</b></td><td>Quantos itens estão fora, ainda não devolvidos.</td></tr>
+        <tr><td><b>Registrados hoje</b></td><td>Quantos empréstimos foram feitos hoje.</td></tr>
+        <tr><td><b>Itens disponíveis</b></td><td>Quantos itens estão na recepção, prontos para emprestar.</td></tr>
+        <tr><td><b>Empréstimos</b> e <b>Cadastro</b></td><td>Abrem o histórico de empréstimos e o cadastro de pessoas e itens.</td></tr>
+        <tr><td>Lista <b>Aguardando devolução</b></td><td>Mostra os itens que estão fora há mais tempo, com o botão <span class="btn">Devolver</span>. Quando há mais de 6, aparece o botão <b>Ver todos</b>.</td></tr>
+      </table>
+      <p>Para voltar a esta tela de qualquer lugar, clique em <span class="btn">Home</span> no alto da página.</p>
+    </section>
+
+    <!-- 4 -->
+    <section id="emprestar">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">4</span>Registrar um empréstimo</h2>
+      <p>Você pode emprestar <b>um ou vários itens</b> para a mesma pessoa de uma vez.</p>
+
+      <h3>Passo 1 – Escolher os itens</h3>
+      <ol class="steps">
+        <li>Clique em <span class="btn p">Registrar</span> (na tela de Empréstimos) ou em <span class="btn">Registrar empréstimo</span> (na tela inicial).</li>
+        <li>Digite no campo de busca parte do <b>nome</b> ou do <b>código</b> do item. Exemplo: “juv” encontra <i>Sala Juventude</i>; “c 19” também. Acentos e letras maiúsculas não fazem diferença.</li>
+      </ol>
+      <figure><a href="ajuda/03-registrar.jpg" target="_blank"><img src="ajuda/03-registrar.jpg" alt="Janela Registrar com o campo de busca vazio"></a><figcaption>A lista de itens só aparece depois que você digita na busca.</figcaption></figure>
+      <ol class="steps" start="3">
+        <li>Clique em <span class="btn p">＋ Adicionar</span> no item desejado. A busca é limpa para você procurar o próximo.</li>
+        <li>Repita para todos os itens que a pessoa vai levar. Eles aparecem em <b>Itens selecionados</b>. Para tirar um item da lista, clique no <b>✕</b> ao lado dele.</li>
+        <li>Clique em <span class="btn p">Continuar com N itens →</span>.</li>
+      </ol>
+      <figure><a href="ajuda/04-registrar-selecao.jpg" target="_blank"><img src="ajuda/04-registrar-selecao.jpg" alt="Janela Registrar com um item selecionado e outro disponível para adicionar"></a><figcaption>Itens selecionados no topo; o item já escolhido mostra “✓ Adicionado”.</figcaption></figure>
+      <p>Cada item mostra a situação dele:</p>
+      <ul>
+        <li><b style="color:var(--ok)">Disponível</b> – pode ser emprestado.</li>
+        <li><b style="color:var(--rd)">Emprestado a …</b> – já está com alguém. No lugar de “Adicionar” aparece o botão <span class="btn">Devolver</span>.</li>
+        <li><b style="color:var(--wn)">Restrito</b> – só pode ser emprestado a pessoas autorizadas (veja a seção <a href="#itens">11</a>).</li>
+      </ul>
+      <figure><a href="ajuda/05-registrar-emprestado.jpg" target="_blank"><img src="ajuda/05-registrar-emprestado.jpg" alt="Busca mostrando itens já emprestados com botão Devolver"></a><figcaption>Itens que já estão emprestados aparecem em vermelho, com o nome de quem está com eles.</figcaption></figure>
+
+      <h3>Passo 2 – Escolher a pessoa</h3>
+      <ol class="steps">
+        <li>Digite o nome da pessoa no campo <b>Pessoa</b>.</li>
+        <li>Clique em <span class="btn">Selecionar</span> ao lado do nome certo. A pessoa escolhida aparece num quadro verde com ✔.</li>
+        <li>Se quiser, escreva uma <b>Observação</b> (ela vale para todos os itens).</li>
+        <li>Clique em <span class="btn p">Salvar</span>.</li>
+      </ol>
+      <figure><a href="ajuda/06-emprestar-pessoa.jpg" target="_blank"><img src="ajuda/06-emprestar-pessoa.jpg" alt="Janela Emprestar 2 itens com pessoa selecionada"></a><figcaption>Com item restrito na lista, só aparecem as pessoas autorizadas.</figcaption></figure>
+      <div class="tip"><b>Dica</b>Ao lado do nome pode aparecer um aviso <b style="color:var(--rd)">⚠ avaria</b>. Ele indica que a pessoa já teve ocorrência (item perdido, danificado…) em empréstimos anteriores. O empréstimo continua permitido; o aviso serve para você ficar atenta.</div>
+
+      <h3>A pessoa ainda não tem cadastro</h3>
+      <ol class="steps">
+        <li>Digite o nome e clique em <span class="btn">＋ Cadastrar nova pessoa</span>.</li>
+        <li>Preencha <b>Nome</b>, <b>Telefone</b> e <b>Setor/Ministério</b>.</li>
+        <li>Clique em <span class="btn p">Salvar</span>. A pessoa é cadastrada e o empréstimo é registrado ao mesmo tempo.</li>
+      </ol>
+      <figure><a href="ajuda/07-nova-pessoa.jpg" target="_blank"><img src="ajuda/07-nova-pessoa.jpg" alt="Formulário de nova pessoa dentro do empréstimo"></a><figcaption>Cadastro rápido de pessoa durante o empréstimo.</figcaption></figure>
+      <div class="rule"><b>Regra do telefone</b>Digite só os números: o sistema coloca parênteses e traço sozinho, no formato <b>(41) 98765-4321</b>. O telefone precisa ter <b>DDD + 9 dígitos começando com 9</b> (celular). Números com dígitos a menos, ou com os 8 últimos dígitos iguais, como (41) 99999-9999, não são aceitos.</div>
+      <div class="tip"><b>Botões da janela</b><b>Voltar</b> retorna à escolha de itens sem perder o que já foi selecionado. O <b>×</b> no canto superior direito fecha a janela sem registrar nada.</div>
+      <p>Depois de salvar, cada item vira um registro separado na tela de Empréstimos. Assim, se a pessoa devolver só parte dos itens, você dá baixa apenas nos que voltaram.</p>
+    </section>
+
+    <!-- 5 -->
+    <section id="devolver">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">5</span>Registrar uma devolução</h2>
+      <p>O botão <span class="btn">Devolver</span> aparece em três lugares: na lista <b>Aguardando devolução</b> da tela inicial, na tela de <b>Empréstimos</b> e na busca da janela <b>Registrar</b>.</p>
+      <ol class="steps">
+        <li>Clique em <span class="btn">Devolver</span> no item que voltou.</li>
+        <li>Confira o item e a pessoa no topo da janela.</li>
+        <li>Deixe marcado <b>Devolvido sem problemas</b>.</li>
+        <li>Clique em <span class="btn p">Confirmar devolução</span>.</li>
+      </ol>
+      <figure><a href="ajuda/08-devolucao.jpg" target="_blank"><img src="ajuda/08-devolucao.jpg" alt="Janela de devolução com a opção Devolvido sem problemas marcada"></a><figcaption>Devolução normal.</figcaption></figure>
+      <p>O sistema grava a data, a hora e o seu nome como responsável pela devolução.</p>
+      <div class="warn"><b>Atenção</b>Confira o item antes de confirmar. Uma devolução registrada não pode ser desfeita pela Recepção. Se registrar a devolução errada, avise um administrador.</div>
+    </section>
+
+    <!-- 6 -->
+    <section id="avaria">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">6</span>Registrar uma avaria</h2>
+      <p>Use quando o item voltar com problema ou não voltar.</p>
+      <ol class="steps">
+        <li>Clique em <span class="btn">Devolver</span> no item.</li>
+        <li>Marque <b>Registrar avaria</b>.</li>
+        <li>Escolha o <b>Tipo de avaria</b>:
+          <ul>
+            <li><b>Item perdido</b> – a pessoa perdeu o item;</li>
+            <li><b>Devolvido parcialmente</b> – voltou só uma parte (ex.: 1 das 2 chaves do molho);</li>
+            <li><b>Danificado</b> – voltou quebrado ou com defeito;</li>
+            <li><b>Outro</b> – qualquer outra situação.</li>
+          </ul></li>
+        <li>Descreva o que aconteceu em <b>Descrição da ocorrência</b> (obrigatório).</li>
+        <li>Clique em <span class="btn p">Confirmar devolução</span>.</li>
+      </ol>
+      <figure><a href="ajuda/09-devolucao-avaria.jpg" target="_blank"><img src="ajuda/09-devolucao-avaria.jpg" alt="Janela de devolução com avaria do tipo Item perdido preenchida"></a><figcaption>Devolução com avaria “Item perdido”.</figcaption></figure>
+      <div class="tip"><b>Item perdido</b>Quando o tipo é <b>Item perdido</b>, aparece a opção <b>Inativar o item</b>, já marcada. Com ela, o item some da busca de empréstimos até ser reposto. Quando o item for reposto, reative-o em Cadastro → Itens (seção <a href="#itens">11</a>).</div>
+      <p>A avaria fica <b>registrada no cadastro da pessoa</b> que estava com o item (veja a seção <a href="#pessoas">10</a>) e aparece no histórico de empréstimos e no PDF.</p>
+    </section>
+
+    <!-- 7 -->
+    <section id="consultar">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">7</span>Consultar empréstimos</h2>
+      <p>Na tela inicial, clique em <b>Empréstimos</b>.</p>
+      <figure><a href="ajuda/10-emprestimos.jpg" target="_blank"><img src="ajuda/10-emprestimos.jpg" alt="Tela de empréstimos com filtros e tabela"></a><figcaption>Tela de Empréstimos.</figcaption></figure>
+      <h3>Filtros</h3>
+      <table class="t">
+        <tr><th>Botão</th><th>Mostra</th></tr>
+        <tr><td><span class="btn">Hoje</span></td><td>Empréstimos feitos hoje.</td></tr>
+        <tr><td><span class="btn">Semana</span></td><td>Empréstimos desde segunda-feira desta semana.</td></tr>
+        <tr><td><span class="btn">Mês</span></td><td>Empréstimos deste mês.</td></tr>
+        <tr><td><span class="btn">Período</span></td><td>Empréstimos entre duas datas que você escolhe nos campos <b>De</b> e <b>Até</b>.</td></tr>
+        <tr><td><span class="btn">Pendentes de devolução</span></td><td>Todos os itens que ainda não voltaram, de qualquer data.</td></tr>
+      </table>
+      <figure><img src="ajuda/13-periodo.png" alt="Filtro Período com campos De e Até"><figcaption>Filtro “Período”.</figcaption></figure>
+      <h3>O que cada coluna mostra</h3>
+      <ul>
+        <li><b>Item</b> e código; <b>Pessoa</b> e telefone; <b>Setor/Ministério</b>.</li>
+        <li><b>Emprestado em</b> e <b>Emprestado por</b>: data, hora e a recepcionista que registrou o empréstimo.</li>
+        <li><b>Devolvido em</b> e <b>Devolução por</b>: data, hora e quem registrou a devolução. Enquanto o item está fora, aparece <b style="color:var(--wn)">Pendente</b>.</li>
+        <li>Quando houve avaria, ela aparece em vermelho abaixo da data de devolução, com a descrição.</li>
+      </ul>
+      <figure><a href="ajuda/11-emprestimos-avaria.jpg" target="_blank"><img src="ajuda/11-emprestimos-avaria.jpg" alt="Tabela de empréstimos com um registro de avaria"></a><figcaption>Registro devolvido com avaria “Devolvido parcialmente”.</figcaption></figure>
+    </section>
+
+    <!-- 8 -->
+    <section id="observacoes">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">8</span>Observações</h2>
+      <p>Use observações para anotar informações sobre um empréstimo, como “ensaio até 11h” ou “devolveu com a chave do armário junto”.</p>
+      <ul>
+        <li>Passe o mouse sobre o botão <span class="btn">Obs.</span> para ler as observações. O número entre parênteses, como <b>Obs. (1)</b>, mostra quantas existem.</li>
+        <li>Clique em <span class="btn">Obs.</span> para ver todas e acrescentar uma nova: escreva no campo <b>Nova observação</b> e clique em <span class="btn p">Adicionar</span>.</li>
+      </ul>
+      <figure><a href="ajuda/12-observacoes.jpg" target="_blank"><img src="ajuda/12-observacoes.jpg" alt="Janela de observações de um empréstimo"></a><figcaption>Cada observação guarda a data, a hora e quem escreveu.</figcaption></figure>
+      <p>As observações não podem ser apagadas. Se escrever algo errado, acrescente uma nova observação corrigindo.</p>
+    </section>
+
+    <!-- 9 -->
+    <section id="pdf">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">9</span>Exportar o relatório em PDF</h2>
+      <ol class="steps">
+        <li>Na tela de Empréstimos, escolha o filtro desejado (Hoje, Semana, Mês, Período ou Pendentes).</li>
+        <li>Clique em <span class="btn">⬇ Exportar PDF</span>.</li>
+        <li>O arquivo <b>emprestimos-ibb-AAAA-MM-DD.pdf</b> é baixado. Abra-o para ver ou imprimir.</li>
+      </ol>
+      <figure><a href="ajuda/19-pdf.jpg" target="_blank"><img src="ajuda/19-pdf.jpg" alt="Exemplo de relatório em PDF" width="560"></a><figcaption>Exemplo de relatório (dados fictícios).</figcaption></figure>
+      <p>O PDF traz todos os registros do filtro escolhido, com quem emprestou, quem recebeu a devolução, as avarias, as observações e a situação de cada item. Ele é <b>protegido contra edição</b>: dá para abrir e imprimir, mas não alterar.</p>
+      <div class="tip"><b>Para imprimir</b>Abra o PDF baixado e use a opção Imprimir do leitor de PDF. O PDF só é gerado com o computador conectado à internet.</div>
+    </section>
+
+    <!-- 10 -->
+    <section id="pessoas">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">10</span>Cadastro de pessoas</h2>
+      <p>Na tela inicial, clique em <b>Cadastro</b> e depois no botão <span class="btn">Pessoas</span>.</p>
+      <figure><a href="ajuda/14-pessoas.jpg" target="_blank"><img src="ajuda/14-pessoas.jpg" alt="Lista de pessoas cadastradas com coluna Avarias"></a><figcaption>Lista de pessoas.</figcaption></figure>
+      <ul>
+        <li><b>Pesquisar:</b> digite parte do nome, telefone ou setor no campo <b>Pesquisar…</b>.</li>
+        <li><b>Ativos / Inativos / Ativos e inativos:</b> escolhe quais pessoas aparecem na lista.</li>
+        <li><span class="btn p">＋ Novo</span> cadastra uma pessoa (nome, telefone e setor/ministério são obrigatórios).</li>
+        <li><span class="btn">Editar</span> corrige os dados de uma pessoa.</li>
+        <li><span class="btn">Inativar</span> tira a pessoa das buscas de empréstimo, sem apagar o histórico. <span class="btn">Ativar</span> traz de volta.</li>
+        <li><span class="btn">🖨 Imprimir</span> baixa um arquivo com a lista exibida. Abra o arquivo e a impressão começa sozinha.</li>
+      </ul>
+      <figure><a href="ajuda/16-editar-pessoa.jpg" target="_blank"><img src="ajuda/16-editar-pessoa.jpg" alt="Formulário de edição de pessoa"></a><figcaption>Editar pessoa. A regra do telefone também vale aqui.</figcaption></figure>
+      <h3>Avarias da pessoa</h3>
+      <p>A coluna <b>Avarias</b> mostra quantas ocorrências a pessoa já teve (ex.: <b style="color:var(--rd)">⚠ 1</b>). Clique no número para ver o histórico: tipo, item, descrição, datas e quem registrou.</p>
+      <figure><a href="ajuda/15-avarias-pessoa.jpg" target="_blank"><img src="ajuda/15-avarias-pessoa.jpg" alt="Janela com o histórico de avarias de uma pessoa"></a><figcaption>Histórico de avarias de uma pessoa.</figcaption></figure>
+      <div class="tip"><b>Padronize o setor/ministério</b>Escreva o setor sempre do mesmo jeito (ex.: sempre “Louvor”, não às vezes “Ministério de Louvor”). As chaves restritas podem ser liberadas para um setor inteiro, e o sistema considera nomes diferentes como setores diferentes.</div>
+    </section>
+
+    <!-- 11 -->
+    <section id="itens">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">11</span>Cadastro de itens</h2>
+      <p>Em <b>Cadastro</b>, clique no botão <span class="btn">Itens</span>.</p>
+      <figure><a href="ajuda/17-itens.jpg" target="_blank"><img src="ajuda/17-itens.jpg" alt="Lista de itens cadastrados"></a><figcaption>Lista de itens. A coluna “Restrito” mostra quantas pessoas estão autorizadas e quais setores.</figcaption></figure>
+      <ul>
+        <li><span class="btn p">＋ Novo</span> cadastra um item: <b>Descrição</b> e <b>Setor/Ministério</b> são obrigatórios; o <b>Código</b> é opcional, mas não pode se repetir.</li>
+        <li><span class="btn">Editar</span> altera os dados do item.</li>
+        <li><span class="btn">Inativar</span> tira o item da busca de empréstimos (ex.: chave perdida). Não é possível inativar um item que está emprestado: registre a devolução antes. <span class="btn">Ativar</span> traz o item de volta.</li>
+      </ul>
+      <h3>Itens restritos</h3>
+      <p>Um item <b>restrito</b> só pode ser emprestado a quem tem autorização. Para configurar, clique em <span class="btn">Editar</span> no item e marque <b>Restrito</b>. Há duas formas de autorizar:</p>
+      <figure><a href="ajuda/18-item-restrito.jpg" target="_blank"><img src="ajuda/18-item-restrito.jpg" alt="Formulário de item restrito com setor e pessoa autorizados"></a><figcaption>Item restrito autorizado para o setor Louvor e para uma pessoa individualmente.</figcaption></figure>
+      <ol class="steps">
+        <li><b>Por setor/ministério:</b> escolha o setor na lista e clique em <span class="btn">Adicionar</span>. Todas as pessoas desse setor ficam autorizadas, <b>inclusive as que forem cadastradas depois</b>. Os nomes autorizados aparecem logo abaixo.</li>
+        <li><b>Por pessoa:</b> para alguém de outro setor, escolha a pessoa em <b>Pessoas autorizadas individualmente</b> e clique em <span class="btn">Adicionar</span>.</li>
+        <li>Clique em <span class="btn p">Salvar</span>.</li>
+      </ol>
+      <p>Para retirar uma autorização, clique no <b>✕</b> ao lado do setor ou da pessoa e salve.</p>
+      <div class="warn"><b>Item restrito sem autorização</b>Se um item restrito não tiver nenhum setor ou pessoa autorizada, ele não pode ser emprestado a ninguém. Na hora do empréstimo aparece a mensagem “Nenhuma pessoa autorizada encontrada”.</div>
+    </section>
+
+    <!-- 12 -->
+    <section id="regras">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">12</span>Regras importantes (resumo)</h2>
+      <table class="t">
+        <tr><th>Situação</th><th>Regra</th></tr>
+        <tr><td>Telefone</td><td>Formato (xx) 9xxxx-xxxx: DDD + celular de 9 dígitos começando com 9. Não aceita dígitos a menos nem os 8 últimos dígitos iguais.</td></tr>
+        <tr><td>Item restrito</td><td>Só aparece para pessoas autorizadas, por setor/ministério ou individualmente.</td></tr>
+        <tr><td>Vários itens restritos juntos</td><td>A pessoa precisa estar autorizada para <b>todos</b> eles. Se não estiver, faça empréstimos separados.</td></tr>
+        <tr><td>Item já emprestado</td><td>Não pode ser emprestado de novo até a devolução ser registrada.</td></tr>
+        <tr><td>Avaria</td><td>Tipo e descrição são obrigatórios. Fica no histórico da pessoa.</td></tr>
+        <tr><td>Item inativo</td><td>Não aparece na busca de empréstimos. Não é possível inativar um item emprestado.</td></tr>
+        <tr><td>Registros do sistema</td><td>Ficam gravados com data, hora e o nome de quem fez. A Recepção não consegue excluir empréstimos.</td></tr>
+      </table>
+    </section>
+
+    <!-- 13 -->
+    <section id="duvidas">
+      <a class="top-link" href="#">↑ topo</a>
+      <h2><span class="n">13</span>Dúvidas frequentes</h2>
+      <details><summary>Digitei o nome do item e ele não aparece.</summary><p>Tente só uma parte do nome ou o código (ex.: “capela” ou “DI 17”). Se ainda assim não aparecer, o item pode estar <b>inativo</b>: veja em Cadastro → Itens, escolhendo “Inativos” na lista.</p></details>
+      <details><summary>A pessoa não aparece na hora de emprestar um item restrito.</summary><p>Ela não está autorizada para esse item. Confira o setor/ministério no cadastro dela e as autorizações do item (seção <a href="#itens">11</a>).</p></details>
+      <details><summary>O sistema não aceita o telefone.</summary><p>O número precisa ter DDD + 9 dígitos começando com 9, por exemplo (41) 98765-4321. Números fixos e números com dígitos repetidos, como (41) 99999-9999, não são aceitos.</p></details>
+      <details><summary>Registrei um empréstimo ou uma devolução errada. Como corrijo?</summary><p>Adicione uma <b>observação</b> explicando o erro e avise um <b>administrador</b>. Somente o administrador pode excluir registros.</p></details>
+      <details><summary>A pessoa devolveu só parte dos itens.</summary><p>Clique em <b>Devolver</b> apenas nos itens que voltaram. Os outros continuam como pendentes. Se faltar uma parte de um mesmo item (ex.: uma chave de um molho), registre como avaria “Devolvido parcialmente”.</p></details>
+      <details><summary>Apareceu a mensagem “Acesso não liberado”.</summary><p>A sua conta ainda não foi liberada ou foi desativada. Fale com um administrador.</p></details>
+      <details><summary>Esqueci a senha.</summary><p>Use “Esqueci minha senha” na tela de entrada (seção <a href="#entrar">2</a>). Se não tiver acesso ao e-mail cadastrado, fale com um administrador.</p></details>
+      <details><summary>O PDF não foi gerado.</summary><p>Verifique a conexão com a internet e tente de novo. Se o filtro escolhido não tiver nenhum registro, o sistema avisa e não gera o arquivo.</p></details>
+      <details><summary>A tela parece desatualizada ou travou.</summary><p>Aperte <b>F5</b> para recarregar a página. Os dados ficam salvos no sistema; nada se perde.</p></details>
+    </section>
+
+    <footer>IBB – Sistema de Empréstimos da Recepção · Manual do usuário (perfil Recepção) · Imagens com dados fictícios</footer>
+  </main>
+</div>
+</body>
+</html>

@@ -427,7 +427,7 @@
       const item = appState.items.find((x) => x.id == id) || {};
       appState.aut = [...(item.aut || [])];
       appState.autSet = [...(item.autSet || [])];
-      modal(`<h3>${id ? 'Editar' : 'Novo'} item</h3><label>Descrição<input id="xd" value="${esc(item.desc)}"></label><label>Código<input id="xc" value="${esc(item.cod)}"></label><label>Setor/Ministério<input id="xs" value="${esc(item.setor)}"></label><label><input type="checkbox" id="xr" ${item.restr ? 'checked' : ''} onchange="aR()"> Restrito (somente setores/ministérios ou pessoas autorizadas)</label><div id="ar"></div><div class="act"><button onclick="closeModal()">Cancelar</button><button class="p" onclick="iSave(${id || 0})">Salvar</button></div>`);
+      modal(`<h3>${id ? 'Editar' : 'Novo'} item</h3><label>Descrição<input id="xd" value="${esc(item.desc)}"></label><label>Código<input id="xc" value="${esc(item.cod)}"></label><label>Setor/Ministério<input id="xs" value="${esc(item.setor)}"></label><label class="opt"><input type="checkbox" id="xr" ${item.restr ? 'checked' : ''} onchange="aR()"> Restrito (somente setores/ministérios ou pessoas autorizadas)</label><div id="ar"></div><div class="act"><button onclick="closeModal()">Cancelar</button><button class="p" onclick="iSave(${id || 0})">Salvar</button></div>`);
       aR();
     }
     function aR() {
