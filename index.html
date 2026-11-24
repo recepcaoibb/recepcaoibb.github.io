@@ -572,7 +572,9 @@
       const q = norm($('#q').value);
       // Lista fica oculta até a pessoa digitar algo na busca.
       if (!q) { $('#res').innerHTML = '<p class="mu" style="margin:10px 2px">Digite na busca para encontrar o item.</p>'; return; }
-      const list = appState.items.filter((i) => i.ativo && norm(i.desc + ' ' + i.cod).includes(q)).slice(0, 20);
+      // Compara também sem espaços: "c 19" encontra "C19" e vice-versa.
+      const sem = (x) => x.replace(/\s+/g, '');
+      const list = appState.items.filter((i) => { const t = norm(i.desc + ' ' + i.cod); return i.ativo && (t.includes(q) || sem(t).includes(sem(q))); }).slice(0, 20);
       $('#res').innerHTML = list.map((i) => {
         const itemLoan = lo(i.id);
         return `<div class="row"><div><b>${esc(i.desc)}</b> <small class="mu">${esc(i.cod)} · ${esc(i.setor)}</small>${i.restr ? ' <span class="tag wn">Restrito</span>' : ''}<br>${itemLoan ? `<span class="tag rd">Emprestado a ${esc(itemLoan.pNome)} desde ${dt(itemLoan.out)}</span>` : '<span class="tag ok">Disponível</span>'}</div>${itemLoan ? `<button onclick="dev(${itemLoan.id})">Devolver</button>` : (appState.cart.includes(i.id) ? `<button onclick="cartRem(${i.id})">✓ Adicionado</button>` : `<button class="p" onclick="cartAdd(${i.id})">＋ Adicionar</button>`)}</div>`;
