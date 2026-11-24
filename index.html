@@ -43,6 +43,8 @@
     .mu { color:var(--mu); }
     .row { display:flex; gap:10px; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--bd); }
     .r2 { display:flex; gap:8px; margin:8px 0; }
+    .bar select.fx { width:auto; max-width:150px; padding-right:4px; }
+    .bar button.ic { padding:8px 11px; min-width:40px; font-size:16px; line-height:1.2; }
     textarea { font:inherit; width:100%; padding:9px 10px; border:1px solid var(--bd); border-radius:8px; background:var(--bg); color:var(--tx); resize:vertical; }
     label.opt { display:flex; align-items:center; gap:8px; font-size:14px; color:var(--tx); }
     label.opt input { width:auto; margin:0; }
@@ -394,12 +396,12 @@
       fonte.filter((x) => x.setor).forEach((x) => { if (!m.has(norm(x.setor))) m.set(norm(x.setor), x.setor.trim()); });
       const lista = [...m.values()].sort((a, b) => a.localeCompare(b, 'pt-BR'));
       if (appState[chave] && !lista.some((x) => norm(x) === norm(appState[chave]))) appState[chave] = '';
-      return `<select style="width:auto;max-width:220px" title="Filtrar por setor/ministério" onchange="appState.${chave}=this.value; draw()"><option value="">Todos os setores</option>${lista.map((x) => `<option value="${esc(x)}" ${norm(x) === norm(appState[chave]) ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>`;
+      return `<select class="fx" title="Filtrar por setor/ministério" onchange="appState.${chave}=this.value; draw()"><option value="">Setor</option>${lista.map((x) => `<option value="${esc(x)}" ${norm(x) === norm(appState[chave]) ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>`;
     }
     // Filtro de itens restritos.
     function restritoFiltro() {
-      const op = [['', 'Restritos e não restritos'], ['s', 'Somente restritos'], ['n', 'Somente não restritos']];
-      return `<select style="width:auto" title="Filtrar itens restritos" onchange="appState.ires=this.value; draw()">${op.map(([v, t]) => `<option value="${v}" ${appState.ires === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+      const op = [['', 'Restrito'], ['s', 'Restritos'], ['n', 'Livres']];
+      return `<select class="fx" title="Filtrar: restritos ou livres (não restritos)" onchange="appState.ires=this.value; draw()">${op.map(([v, t]) => `<option value="${v}" ${appState.ires === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
     }
     function fq(item) {
       // Filtro de setor/ministério vale só para a lista de pessoas.
@@ -411,7 +413,7 @@
 
     function vCad() {
       const peopleMode = appState.tab === 'p';
-      let html = `<div class="bar"><button class="${peopleMode ? 'on' : ''}" onclick="appState.tab='p'; appState.cq=''; draw()">Pessoas</button><button class="${peopleMode ? '' : 'on'}" onclick="appState.tab='i'; appState.cq=''; draw()">Itens</button><span class="sp"></span><input id="cq" placeholder="Pesquisar…" value="${esc(appState.cq)}" style="max-width:240px" oninput="appState.cq=this.value; draw(); const e=$('#cq'); e.focus(); e.setSelectionRange(999,999)">${setorFiltro()}${peopleMode ? '' : restritoFiltro()}<select style="width:auto" onchange="appState.cs=this.value; draw()"><option value="a" ${appState.cs === 'a' ? 'selected' : ''}>Ativos</option><option value="i" ${appState.cs === 'i' ? 'selected' : ''}>Inativos</option><option value="t" ${appState.cs === 't' ? 'selected' : ''}>Ativos e inativos</option></select><button onclick="imp()">🖨 Imprimir</button><button class="p" onclick="${peopleMode ? 'pForm()' : 'iForm()'}">＋ Novo</button></div><div class="card tw"><table>`;
+      let html = `<div class="bar"><button class="${peopleMode ? 'on' : ''}" onclick="appState.tab='p'; appState.cq=''; draw()">Pessoas</button><button class="${peopleMode ? '' : 'on'}" onclick="appState.tab='i'; appState.cq=''; draw()">Itens</button><span class="sp"></span><input id="cq" placeholder="Pesquisar…" value="${esc(appState.cq)}" style="max-width:220px" oninput="appState.cq=this.value; draw(); const e=$('#cq'); e.focus(); e.setSelectionRange(999,999)">${setorFiltro()}${peopleMode ? '' : restritoFiltro()}<select class="fx" title="Filtrar por situação: ativos, inativos ou todos" onchange="appState.cs=this.value; draw()"><option value="a" ${appState.cs === 'a' ? 'selected' : ''}>Ativos</option><option value="i" ${appState.cs === 'i' ? 'selected' : ''}>Inativos</option><option value="t" ${appState.cs === 't' ? 'selected' : ''}>Todos</option></select><button class="ic" onclick="imp()" title="Imprimir lista" aria-label="Imprimir lista">🖨</button><button class="p ic" onclick="${peopleMode ? 'pForm()' : 'iForm()'}" title="${peopleMode ? 'Nova pessoa' : 'Novo item'}" aria-label="${peopleMode ? 'Nova pessoa' : 'Novo item'}">＋</button></div><div class="card tw"><table>`;
       if (peopleMode) {
         html += '<tr><th>Nome<th>Telefone<th>Setor/Ministério<th>Avarias<th>Status<th></tr>' + appState.people.filter(fq).map((p) => { const na = avariasDe(p.id).length; return `<tr class="${p.ativo ? '' : 'off'}"><td>${esc(p.nome)}<td>${esc(p.tel)}<td>${esc(p.setor)}<td>${na ? `<button class="d" onclick="pAv(${p.id})">⚠ ${na}</button>` : '<span class="mu">—</span>'}<td>${p.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="pForm(${p.id})">Editar</button> <button class="d" onclick="tg('people', ${p.id})">${p.ativo ? 'Inativar' : 'Ativar'}</button></tr>`; }).join('');
       } else {
