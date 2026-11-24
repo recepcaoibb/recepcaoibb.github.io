@@ -400,7 +400,7 @@
     }
     // Filtro de itens restritos.
     function restritoFiltro() {
-      const op = [['', 'Restrito'], ['s', 'Restritos'], ['n', 'Livres']];
+      const op = [['', 'Todos'], ['s', 'Restritos'], ['n', 'Livres']];
       return `<select class="fx" title="Filtrar: restritos ou livres (não restritos)" onchange="appState.ires=this.value; draw()">${op.map(([v, t]) => `<option value="${v}" ${appState.ires === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
     }
     function fq(item) {
