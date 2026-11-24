@@ -101,6 +101,7 @@
       tab: 'p',
       cq: '',
       cs: 'a',
+      cset: '',
       f: 'hoje',
       a: '',
       b: '',
@@ -381,13 +382,23 @@
       `;
     }
 
+    // Lista de setores/ministérios de todas as pessoas (ativas e inativas) para o filtro.
+    function setorFiltro() {
+      const m = new Map();
+      appState.people.filter((p) => p.setor).forEach((p) => { if (!m.has(norm(p.setor))) m.set(norm(p.setor), p.setor.trim()); });
+      const lista = [...m.values()].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      if (appState.cset && !lista.some((x) => norm(x) === norm(appState.cset))) appState.cset = '';
+      return `<select style="width:auto;max-width:220px" title="Filtrar por setor/ministério" onchange="appState.cset=this.value; draw()"><option value="">Todos os setores</option>${lista.map((x) => `<option value="${esc(x)}" ${norm(x) === norm(appState.cset) ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>`;
+    }
     function fq(item) {
+      // Filtro de setor/ministério vale só para a lista de pessoas.
+      if (appState.tab === 'p' && appState.cset && norm(item.setor) !== norm(appState.cset)) return false;
       return [item.nome, item.tel, item.setor, item.desc, item.cod].join(' ').toLowerCase().includes((appState.cq || '').toLowerCase()) && (appState.cs === 't' || (appState.cs === 'i' ? !item.ativo : !!item.ativo));
     }
 
     function vCad() {
       const peopleMode = appState.tab === 'p';
-      let html = `<div class="bar"><button class="${peopleMode ? 'on' : ''}" onclick="appState.tab='p'; appState.cq=''; draw()">Pessoas</button><button class="${peopleMode ? '' : 'on'}" onclick="appState.tab='i'; appState.cq=''; draw()">Itens</button><span class="sp"></span><input id="cq" placeholder="Pesquisar…" value="${esc(appState.cq)}" style="max-width:240px" oninput="appState.cq=this.value; draw(); const e=$('#cq'); e.focus(); e.setSelectionRange(999,999)"><select style="width:auto" onchange="appState.cs=this.value; draw()"><option value="a" ${appState.cs === 'a' ? 'selected' : ''}>Ativos</option><option value="i" ${appState.cs === 'i' ? 'selected' : ''}>Inativos</option><option value="t" ${appState.cs === 't' ? 'selected' : ''}>Ativos e inativos</option></select><button onclick="imp()">🖨 Imprimir</button><button class="p" onclick="${peopleMode ? 'pForm()' : 'iForm()'}">＋ Novo</button></div><div class="card tw"><table>`;
+      let html = `<div class="bar"><button class="${peopleMode ? 'on' : ''}" onclick="appState.tab='p'; appState.cq=''; draw()">Pessoas</button><button class="${peopleMode ? '' : 'on'}" onclick="appState.tab='i'; appState.cq=''; draw()">Itens</button><span class="sp"></span>${peopleMode ? setorFiltro() : ''}<input id="cq" placeholder="Pesquisar…" value="${esc(appState.cq)}" style="max-width:240px" oninput="appState.cq=this.value; draw(); const e=$('#cq'); e.focus(); e.setSelectionRange(999,999)"><select style="width:auto" onchange="appState.cs=this.value; draw()"><option value="a" ${appState.cs === 'a' ? 'selected' : ''}>Ativos</option><option value="i" ${appState.cs === 'i' ? 'selected' : ''}>Inativos</option><option value="t" ${appState.cs === 't' ? 'selected' : ''}>Ativos e inativos</option></select><button onclick="imp()">🖨 Imprimir</button><button class="p" onclick="${peopleMode ? 'pForm()' : 'iForm()'}">＋ Novo</button></div><div class="card tw"><table>`;
       if (peopleMode) {
         html += '<tr><th>Nome<th>Telefone<th>Setor/Ministério<th>Avarias<th>Status<th></tr>' + appState.people.filter(fq).map((p) => { const na = avariasDe(p.id).length; return `<tr class="${p.ativo ? '' : 'off'}"><td>${esc(p.nome)}<td>${esc(p.tel)}<td>${esc(p.setor)}<td>${na ? `<button class="d" onclick="pAv(${p.id})">⚠ ${na}</button>` : '<span class="mu">—</span>'}<td>${p.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="pForm(${p.id})">Editar</button> <button class="d" onclick="tg('people', ${p.id})">${p.ativo ? 'Inativar' : 'Ativar'}</button></tr>`; }).join('');
       } else {
