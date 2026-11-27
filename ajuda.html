@@ -99,7 +99,7 @@
       <table class="t">
         <tr><th>Perfil</th><th>O que pode fazer</th></tr>
         <tr><td><b>Recepção</b></td><td>Registrar empréstimos e devoluções, registrar avarias, consultar e exportar o histórico, cadastrar e editar pessoas e itens.</td></tr>
-        <tr><td><b>Admin</b></td><td>Tudo o que a Recepção faz e, além disso: criar e excluir usuários, ajustar a hora do sistema e excluir registros de empréstimo feitos por engano.</td></tr>
+        <tr><td><b>Admin</b></td><td>Tudo o que a Recepção faz e, além disso: criar e excluir usuários, ajustar a hora do sistema, excluir registros de empréstimo feitos por engano e excluir pessoas e itens do cadastro.</td></tr>
       </table>
       <p>Este manual descreve as funções do perfil <b>Recepção</b>.</p>
     </section>
@@ -172,7 +172,7 @@
       <h3>Passo 2 – Escolher a pessoa</h3>
       <ol class="steps">
         <li>Digite o nome da pessoa no campo <b>Pessoa</b>.</li>
-        <li>Clique em <span class="btn">Selecionar</span> ao lado do nome certo. A pessoa escolhida aparece num quadro verde com ✔.</li>
+        <li>Clique no <b>nome da pessoa</b> na lista (as pessoas aparecem em ordem alfabética). A pessoa escolhida fica destacada e aparece num quadro verde com ✔.</li>
         <li>Se quiser, escreva uma <b>Observação</b> (ela vale para todos os itens).</li>
         <li>Clique em <span class="btn p">Salvar</span>.</li>
       </ol>
@@ -182,7 +182,7 @@
       <h3>A pessoa ainda não tem cadastro</h3>
       <ol class="steps">
         <li>Digite o nome e clique em <span class="btn">＋ Cadastrar nova pessoa</span>.</li>
-        <li>Preencha <b>Nome</b>, <b>Telefone</b> e <b>Setor/Ministério</b>.</li>
+        <li>Preencha <b>Nome</b> e <b>Telefone</b> e escolha o <b>Setor/Ministério</b> na lista. Se o setor ainda não existir, escolha <b>＋ Novo setor/ministério…</b> e digite o nome.</li>
         <li>Clique em <span class="btn p">Salvar</span>. A pessoa é cadastrada e o empréstimo é registrado ao mesmo tempo.</li>
       </ol>
       <figure><a href="ajuda/07-nova-pessoa.jpg" target="_blank"><img src="ajuda/07-nova-pessoa.jpg" alt="Formulário de nova pessoa dentro do empréstimo"></a><figcaption>Cadastro rápido de pessoa durante o empréstimo.</figcaption></figure>
@@ -287,13 +287,13 @@
     <section id="pessoas">
       <a class="top-link" href="#">↑ topo</a>
       <h2><span class="n">10</span>Cadastro de pessoas</h2>
-      <p>Na tela inicial, clique em <b>Cadastro</b> e depois no botão <span class="btn">Pessoas</span>.</p>
+      <p>Na tela inicial, clique em <b>Cadastro</b> e depois no botão <span class="btn">Pessoas</span>. O Cadastro sempre abre sem pesquisa e sem filtros.</p>
       <figure><a href="ajuda/14-pessoas.jpg" target="_blank"><img src="ajuda/14-pessoas.jpg" alt="Lista de pessoas cadastradas com coluna Avarias"></a><figcaption>Lista de pessoas.</figcaption></figure>
       <ul>
         <li><b>Pesquisar:</b> digite parte do nome, telefone ou setor no campo <b>Pesquisar…</b>.</li>
         <li><b>Setor:</b> escolha um setor/ministério na lista para ver só as pessoas dele (ex.: “Pastor Auxiliar”). Funciona junto com a pesquisa por nome.</li>
         <li><b>Ativos / Inativos / Todos:</b> escolhe quais pessoas aparecem na lista.</li>
-        <li><span class="btn p">＋</span> (Novo) cadastra uma pessoa (nome, telefone e setor/ministério são obrigatórios).</li>
+        <li><span class="btn p">＋</span> (Novo) cadastra uma pessoa (nome, telefone e setor/ministério são obrigatórios). O setor/ministério é escolhido numa lista com os setores já cadastrados; para um setor novo, use <b>＋ Novo setor/ministério…</b>.</li>
         <li><span class="btn">Editar</span> corrige os dados de uma pessoa.</li>
         <li><span class="btn">Inativar</span> tira a pessoa das buscas de empréstimo, sem apagar o histórico. <span class="btn">Ativar</span> traz de volta.</li>
         <li><span class="btn">🖨</span> (Imprimir) baixa um arquivo com a lista exibida. Abra o arquivo e a impressão começa sozinha.</li>
@@ -313,7 +313,7 @@
       <figure><a href="ajuda/17-itens.jpg" target="_blank"><img src="ajuda/17-itens.jpg" alt="Lista de itens cadastrados"></a><figcaption>Lista de itens. A coluna “Restrito” mostra quantas pessoas estão autorizadas e quais setores.</figcaption></figure>
       <ul>
         <li><b>Pesquisar e filtros:</b> depois da caixa de pesquisa há a lista <b>Setor</b>, para ver só os itens de um setor/local, e o filtro de restrição, com as opções <b>Todos</b>, <b>Restritos</b> e <b>Livres</b> (não restritos).</li>
-        <li><span class="btn p">＋</span> (Novo) cadastra um item: <b>Descrição</b> e <b>Setor/Ministério</b> são obrigatórios; o <b>Código</b> é opcional, mas não pode se repetir.</li>
+        <li><span class="btn p">＋</span> (Novo) cadastra um item: <b>Descrição</b> e <b>Setor/Ministério</b> (escolhido na lista) são obrigatórios; o <b>Código</b> é opcional, mas não pode se repetir.</li>
         <li><span class="btn">Editar</span> altera os dados do item.</li>
         <li><span class="btn">Inativar</span> tira o item da busca de empréstimos (ex.: chave perdida). Não é possível inativar um item que está emprestado: registre a devolução antes. <span class="btn">Ativar</span> traz o item de volta.</li>
       </ul>
@@ -322,7 +322,7 @@
       <figure><a href="ajuda/18-item-restrito.jpg" target="_blank"><img src="ajuda/18-item-restrito.jpg" alt="Formulário de item restrito com setor e pessoa autorizados"></a><figcaption>Item restrito autorizado para o setor Louvor e para uma pessoa individualmente.</figcaption></figure>
       <ol class="steps">
         <li><b>Por setor/ministério:</b> escolha o setor na lista e clique em <span class="btn">Adicionar</span>. Todas as pessoas desse setor ficam autorizadas, <b>inclusive as que forem cadastradas depois</b>. Os nomes autorizados aparecem logo abaixo.</li>
-        <li><b>Por pessoa:</b> para alguém de outro setor, escolha a pessoa em <b>Pessoas autorizadas individualmente</b> e clique em <span class="btn">Adicionar</span>.</li>
+        <li><b>Por pessoa:</b> para alguém de outro setor, escolha a pessoa (lista em ordem alfabética) em <b>Pessoas autorizadas individualmente</b> e clique em <span class="btn">Adicionar</span>.</li>
         <li>Clique em <span class="btn p">Salvar</span>.</li>
       </ol>
       <p>Para retirar uma autorização, clique no <b>✕</b> ao lado do setor ou da pessoa e salve.</p>

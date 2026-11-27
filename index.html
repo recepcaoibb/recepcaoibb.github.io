@@ -43,6 +43,9 @@
     .mu { color:var(--mu); }
     .row { display:flex; gap:10px; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--bd); }
     .r2 { display:flex; gap:8px; margin:8px 0; }
+    .row.pick { cursor:pointer; padding:10px 8px; border-radius:8px; }
+    .row.pick:hover, .row.pick:focus-visible { background:var(--bg); outline:none; }
+    .row.pick.on { background:#e8f4ec; }
     .bar select.fx { width:auto; max-width:150px; padding-right:4px; }
     .bar button.ic { padding:8px 11px; min-width:40px; font-size:16px; line-height:1.2; }
     textarea { font:inherit; width:100%; padding:9px 10px; border:1px solid var(--bd); border-radius:8px; background:var(--bg); color:var(--tx); resize:vertical; }
@@ -278,7 +281,12 @@
 
     function modal(html) { $('#mo').innerHTML = `<div class="ov"><div class="md">${html}</div></div>`; }
     function closeModal() { $('#mo').innerHTML = ''; }
-    function go(view) { if (view === 'cfg' && !isAdmin()) return; appState.view = view; draw(); }
+    function go(view) {
+      if (view === 'cfg' && !isAdmin()) return;
+      // Ao entrar no Cadastro vindo de outra tela, começa sem pesquisa e sem filtros.
+      if (view === 'cad' && appState.view !== 'cad') Object.assign(appState, { cq: '', cs: 'a', cset: '', iset: '', ires: '' });
+      appState.view = view; draw();
+    }
     function draw() {
       if (!appState.user) {
         $('#app').innerHTML = `
@@ -415,9 +423,9 @@
       const peopleMode = appState.tab === 'p';
       let html = `<div class="bar"><button class="${peopleMode ? 'on' : ''}" onclick="appState.tab='p'; appState.cq=''; draw()">Pessoas</button><button class="${peopleMode ? '' : 'on'}" onclick="appState.tab='i'; appState.cq=''; draw()">Itens</button><span class="sp"></span><input id="cq" placeholder="Pesquisar…" value="${esc(appState.cq)}" style="max-width:220px" oninput="appState.cq=this.value; draw(); const e=$('#cq'); e.focus(); e.setSelectionRange(999,999)">${setorFiltro()}${peopleMode ? '' : restritoFiltro()}<select class="fx" title="Filtrar por situação: ativos, inativos ou todos" onchange="appState.cs=this.value; draw()"><option value="a" ${appState.cs === 'a' ? 'selected' : ''}>Ativos</option><option value="i" ${appState.cs === 'i' ? 'selected' : ''}>Inativos</option><option value="t" ${appState.cs === 't' ? 'selected' : ''}>Todos</option></select><button class="ic" onclick="imp()" title="Imprimir lista" aria-label="Imprimir lista">🖨</button><button class="p ic" onclick="${peopleMode ? 'pForm()' : 'iForm()'}" title="${peopleMode ? 'Nova pessoa' : 'Novo item'}" aria-label="${peopleMode ? 'Nova pessoa' : 'Novo item'}">＋</button></div><div class="card tw"><table>`;
       if (peopleMode) {
-        html += '<tr><th>Nome<th>Telefone<th>Setor/Ministério<th>Avarias<th>Status<th></tr>' + appState.people.filter(fq).map((p) => { const na = avariasDe(p.id).length; return `<tr class="${p.ativo ? '' : 'off'}"><td>${esc(p.nome)}<td>${esc(p.tel)}<td>${esc(p.setor)}<td>${na ? `<button class="d" onclick="pAv(${p.id})">⚠ ${na}</button>` : '<span class="mu">—</span>'}<td>${p.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="pForm(${p.id})">Editar</button> <button class="d" onclick="tg('people', ${p.id})">${p.ativo ? 'Inativar' : 'Ativar'}</button></tr>`; }).join('');
+        html += '<tr><th>Nome<th>Telefone<th>Setor/Ministério<th>Avarias<th>Status<th></tr>' + appState.people.filter(fq).map((p) => { const na = avariasDe(p.id).length; return `<tr class="${p.ativo ? '' : 'off'}"><td>${esc(p.nome)}<td>${esc(p.tel)}<td>${esc(p.setor)}<td>${na ? `<button class="d" onclick="pAv(${p.id})">⚠ ${na}</button>` : '<span class="mu">—</span>'}<td>${p.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="pForm(${p.id})">Editar</button> <button class="d" onclick="tg('people', ${p.id})">${p.ativo ? 'Inativar' : 'Ativar'}</button>${isAdmin() ? ` <button class="d" onclick="exPE(${p.id})">Excluir</button>` : ''}</tr>`; }).join('');
       } else {
-        html += '<tr><th>Descrição<th>Código<th>Setor/Ministério<th>Restrito<th>Status<th></tr>' + appState.items.filter(fq).map((i) => `<tr class="${i.ativo ? '' : 'off'}"><td>${esc(i.desc)}<td>${esc(i.cod)}<td>${esc(i.setor)}<td>${i.restr ? `Sim (${autorizadosDe(i).length} autorizados${(i.autSet || []).length ? ' · setores: ' + i.autSet.map(esc).join(', ') : ''})` : 'Não'}<td>${i.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="iForm(${i.id})">Editar</button> <button class="d" onclick="tg('items', ${i.id})">${i.ativo ? 'Inativar' : 'Ativar'}</button></tr>`).join('');
+        html += '<tr><th>Descrição<th>Código<th>Setor/Ministério<th>Restrito<th>Status<th></tr>' + appState.items.filter(fq).map((i) => `<tr class="${i.ativo ? '' : 'off'}"><td>${esc(i.desc)}<td>${esc(i.cod)}<td>${esc(i.setor)}<td>${i.restr ? `Sim (${autorizadosDe(i).length} autorizados${(i.autSet || []).length ? ' · setores: ' + i.autSet.map(esc).join(', ') : ''})` : 'Não'}<td>${i.ativo ? 'Ativo' : 'Inativo'}<td><button onclick="iForm(${i.id})">Editar</button> <button class="d" onclick="tg('items', ${i.id})">${i.ativo ? 'Inativar' : 'Ativar'}</button>${isAdmin() ? ` <button class="d" onclick="exIE(${i.id})">Excluir</button>` : ''}</tr>`).join('');
       }
       return html + '</table>' + ((peopleMode ? appState.people : appState.items).filter(fq).length ? '' : '<p class="mu">Nenhum registro encontrado.</p>') + '</div>';
     }
@@ -434,14 +442,74 @@
       draw();
     }
 
+    // Campo de setor/ministério: lista suspensa com os setores existentes + opção de criar um novo.
+    function setoresDe(fonte) {
+      const m = new Map();
+      fonte.filter((x) => x.setor).forEach((x) => { if (!m.has(norm(x.setor))) m.set(norm(x.setor), x.setor.trim()); });
+      return [...m.values()].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    }
+    function setorCampo(id, atual, fonte) {
+      const lista = setoresDe(fonte);
+      const existe = !!atual && lista.some((x) => norm(x) === norm(atual));
+      return `<select id="${id}" onchange="setorNovo('${id}')"><option value="">Selecione…</option>${lista.map((x) => `<option value="${esc(x)}" ${atual && norm(x) === norm(atual) ? 'selected' : ''}>${esc(x)}</option>`).join('')}${atual && !existe ? `<option value="${esc(atual)}" selected>${esc(atual)}</option>` : ''}<option value="__novo">＋ Novo setor/ministério…</option></select><input id="${id}_n" placeholder="Digite o nome do novo setor/ministério" style="display:none;margin-top:6px">`;
+    }
+    function setorNovo(id) {
+      const novo = $('#' + id).value === '__novo';
+      const campo = $('#' + id + '_n');
+      campo.style.display = novo ? 'block' : 'none';
+      if (novo) campo.focus();
+    }
+    // Valor escolhido; um setor "novo" igual a um existente (sem contar acentos/maiúsculas) usa o nome já cadastrado.
+    function setorValor(id, fonte) {
+      const v = $('#' + id).value === '__novo' ? $('#' + id + '_n').value : $('#' + id).value;
+      const t = v.trim().replace(/\s+/g, ' ');
+      return setoresDe(fonte).find((x) => norm(x) === norm(t)) || t;
+    }
+
+    // Exclusão definitiva de pessoas e itens: somente Admin (também garantido pelas regras do Firestore).
+    function exPE(id) {
+      if (!isAdmin()) return;
+      const p = appState.people.find((x) => x.id == id); if (!p) return;
+      if (appState.loans.some((l) => l.pId == id && !l.dv)) return alert('Esta pessoa tem item emprestado. Registre a devolução antes de excluir.');
+      const ne = appState.loans.filter((l) => l.pId == id).length;
+      const na = appState.items.filter((i) => (i.aut || []).includes(p.id)).length;
+      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar" title="Fechar">×</button><h3>Excluir pessoa?</h3><p><b>${esc(p.nome)}</b><br><small class="mu">${esc(p.setor)} · ${esc(p.tel)}</small></p><p class="mu" style="font-size:13px">O cadastro será apagado definitivamente.${ne ? ` Os ${ne} registros de empréstimo dela continuam no histórico, com o nome.` : ''}${na ? ` Ela também será retirada das autorizações de ${na} ${na === 1 ? 'item restrito' : 'itens restritos'}.` : ''} Se quiser apenas tirar a pessoa das buscas, use Inativar.</p><div class="act"><button onclick="closeModal()">Cancelar</button><button class="d" onclick="exPS(${p.id})">Excluir definitivamente</button></div>`);
+    }
+    async function exPS(id) {
+      if (!isAdmin()) return;
+      try {
+        appState.items.filter((i) => (i.aut || []).includes(id)).forEach((i) => { i.aut = i.aut.filter((z) => z != id); });
+        await saveData();
+        await appState.db.collection('people').doc(String(id)).delete();
+        appState.people = appState.people.filter((x) => x.id != id); saved.delete('people/' + id);
+        closeModal(); draw(); toast('Pessoa excluída.');
+      } catch (err) { console.error(err); alert('Não foi possível excluir. Verifique sua conexão e tente de novo.'); }
+    }
+    function exIE(id) {
+      if (!isAdmin()) return;
+      const i = appState.items.find((x) => x.id == id); if (!i) return;
+      if (lo(id)) return alert('Este item está emprestado. Registre a devolução antes de excluir.');
+      const ne = appState.loans.filter((l) => l.itemId == id).length;
+      modal(`<button class="mx" onclick="closeModal()" aria-label="Fechar" title="Fechar">×</button><h3>Excluir item?</h3><p><b>${esc(i.desc)}</b> <small class="mu">${esc(i.cod)} · ${esc(i.setor)}</small></p><p class="mu" style="font-size:13px">O item será apagado definitivamente.${ne ? ` Os ${ne} registros de empréstimo dele continuam no histórico.` : ''} Se quiser apenas tirar o item das buscas (ex.: chave perdida), use Inativar.</p><div class="act"><button onclick="closeModal()">Cancelar</button><button class="d" onclick="exIS(${i.id})">Excluir definitivamente</button></div>`);
+    }
+    async function exIS(id) {
+      if (!isAdmin()) return;
+      try {
+        await appState.db.collection('items').doc(String(id)).delete();
+        appState.items = appState.items.filter((x) => x.id != id); saved.delete('items/' + id);
+        appState.cart = (appState.cart || []).filter((x) => x != id);
+        closeModal(); draw(); toast('Item excluído.');
+      } catch (err) { console.error(err); alert('Não foi possível excluir. Verifique sua conexão e tente de novo.'); }
+    }
+
     function pForm(id) {
       const p = appState.people.find((x) => x.id == id) || {};
-      modal(`<h3>${id ? 'Editar' : 'Nova'} pessoa</h3><label>Nome<input id="pn" value="${esc(p.nome)}"></label><label>Telefone<input id="pt" ${TEL_ATTR} value="${esc(fmtTel(p.tel))}"></label><label>Setor/Ministério<input id="ps" value="${esc(p.setor)}"></label><div class="act"><button onclick="closeModal()">Cancelar</button><button class="p" onclick="pSave(${id || 0})">Salvar</button></div>`);
+      modal(`<h3>${id ? 'Editar' : 'Nova'} pessoa</h3><label>Nome<input id="pn" value="${esc(p.nome)}"></label><label>Telefone<input id="pt" ${TEL_ATTR} value="${esc(fmtTel(p.tel))}"></label><label>Setor/Ministério${setorCampo('ps', p.setor, appState.people)}</label><div class="act"><button onclick="closeModal()">Cancelar</button><button class="p" onclick="pSave(${id || 0})">Salvar</button></div>`);
     }
     function pSave(id) {
       const nome = $('#pn').value.trim();
       const tel = $('#pt').value.trim();
-      const setor = $('#ps').value.trim();
+      const setor = setorValor('ps', appState.people);
       if (!nome || !tel || !setor) return alert('Preencha nome, telefone e setor/ministério.');
       if (!telOk(tel)) return alert(telMsg(tel));
       if (id) Object.assign(appState.people.find((x) => x.id == id), { nome, tel, setor });
@@ -453,7 +521,7 @@
       const item = appState.items.find((x) => x.id == id) || {};
       appState.aut = [...(item.aut || [])];
       appState.autSet = [...(item.autSet || [])];
-      modal(`<h3>${id ? 'Editar' : 'Novo'} item</h3><label>Descrição<input id="xd" value="${esc(item.desc)}"></label><label>Código<input id="xc" value="${esc(item.cod)}"></label><label>Setor/Ministério<input id="xs" value="${esc(item.setor)}"></label><label class="opt"><input type="checkbox" id="xr" ${item.restr ? 'checked' : ''} onchange="aR()"> Restrito (somente setores/ministérios ou pessoas autorizadas)</label><div id="ar"></div><div class="act"><button onclick="closeModal()">Cancelar</button><button class="p" onclick="iSave(${id || 0})">Salvar</button></div>`);
+      modal(`<h3>${id ? 'Editar' : 'Novo'} item</h3><label>Descrição<input id="xd" value="${esc(item.desc)}"></label><label>Código<input id="xc" value="${esc(item.cod)}"></label><label>Setor/Ministério${setorCampo('xs', item.setor, appState.items)}</label><label class="opt"><input type="checkbox" id="xr" ${item.restr ? 'checked' : ''} onchange="aR()"> Restrito (somente setores/ministérios ou pessoas autorizadas)</label><div id="ar"></div><div class="act"><button onclick="closeModal()">Cancelar</button><button class="p" onclick="iSave(${id || 0})">Salvar</button></div>`);
       aR();
     }
     function aR() {
@@ -461,8 +529,8 @@
       const usados = appState.autSet.map(norm);
       const opcoes = setoresPessoas().filter((x) => !usados.includes(norm(x)));
       const contaSetor = (x) => appState.people.filter((p) => p.ativo && norm(p.setor) === norm(x)).length;
-      const pelosSetores = appState.people.filter((p) => p.ativo && usados.includes(norm(p.setor)));
-      const avulsas = appState.people.filter((p) => p.ativo && !appState.aut.includes(p.id) && !usados.includes(norm(p.setor)));
+      const pelosSetores = appState.people.filter((p) => p.ativo && usados.includes(norm(p.setor))).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+      const avulsas = appState.people.filter((p) => p.ativo && !appState.aut.includes(p.id) && !usados.includes(norm(p.setor))).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
       $('#ar').innerHTML = `
         <div style="margin-top:8px"><b>Setores/ministérios autorizados</b>
           <p class="mu" style="font-size:12px;margin:2px 0">Todas as pessoas do setor ficam autorizadas, inclusive as que forem cadastradas depois.</p>
@@ -472,7 +540,7 @@
         </div>
         <div style="margin-top:12px"><b>Pessoas autorizadas individualmente</b>
           <div class="r2"><select id="as"><option value="">Selecionar pessoa autorizada…</option>${avulsas.map((p) => `<option value="${p.id}">${esc(p.nome)} (${esc(p.setor)})</option>`).join('')}</select><button onclick="aA()">Adicionar</button></div>
-          <div>${appState.aut.map((a) => { const p = appState.people.find((z) => z.id == a); return `<span class="chip">${esc(p ? p.nome : '?')} <a onclick="aD(${a})">✕</a></span>`; }).join('') || '<small class="mu">Nenhuma pessoa adicionada individualmente.</small>'}</div>
+          <div>${[...appState.aut].sort((a, b) => ((appState.people.find((z) => z.id == a) || {}).nome || '').localeCompare((appState.people.find((z) => z.id == b) || {}).nome || '', 'pt-BR')).map((a) => { const p = appState.people.find((z) => z.id == a); return `<span class="chip">${esc(p ? p.nome : '?')} <a onclick="aD(${a})">✕</a></span>`; }).join('') || '<small class="mu">Nenhuma pessoa adicionada individualmente.</small>'}</div>
         </div>`;
     }
     function aSA() {
@@ -488,7 +556,7 @@
     function iSave(id) {
       const desc = $('#xd').value.trim();
       const cod = $('#xc').value.trim();
-      const setor = $('#xs').value.trim();
+      const setor = setorValor('xs', appState.items);
       const restr = $('#xr').checked;
       if (!desc || !setor) return alert('Preencha descrição e setor/ministério.');
       if (restr && !appState.aut.length && !appState.autSet.length) return alert('Item restrito precisa de ao menos um setor/ministério ou uma pessoa autorizada.');
@@ -644,22 +712,26 @@
       ps(); $('#pq').focus();
     }
     function ps() {
-      const q = $('#pq').value.toLowerCase();
+      const q = norm($('#pq').value);
       const restritos = appState.r.itens.filter((i) => i.restr);
-      let list = appState.people.filter((p) => p.ativo && p.nome.toLowerCase().includes(q));
+      let list = appState.people.filter((p) => p.ativo && norm(p.nome).includes(q));
       if (restritos.length) list = list.filter((p) => restritos.every((i) => autorizado(i, p)));
-      $('#pr').innerHTML = list.slice(0, 6).map((p) => `<div class="row"><div>${esc(p.nome)} <small class="mu">${esc(p.setor)} · ${esc(p.tel)}</small>${avariasDe(p.id).length ? ` <span class="tag rd">⚠ ${avariasDe(p.id).length} ${avariasDe(p.id).length === 1 ? 'avaria' : 'avarias'}</span>` : ''}</div><button onclick="ch(${p.id})">Selecionar</button></div>`).join('') + (restritos.length ? (list.length ? '' : `<p class="mu">Nenhuma pessoa autorizada encontrada${restritos.length > 1 ? ' para todos os itens restritos selecionados. Se for o caso, faça empréstimos separados' : '. Este item não pode ser emprestado a outra pessoa'}.</p>`) : `<div class="row"><span class="mu">Não encontrou?</span><button onclick="np()">＋ Cadastrar nova pessoa</button></div>`);
+      list.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+      const sel = appState.r.p && appState.r.p.id;
+      $('#pr').innerHTML = list.slice(0, 6).map((p) => `<div class="row pick ${p.id === sel ? 'on' : ''}" role="button" tabindex="0" title="Clique para selecionar" onclick="ch(${p.id})" onkeydown="if(event.key==='Enter') ch(${p.id})"><div>${p.id === sel ? '✔ ' : ''}${esc(p.nome)} <small class="mu">${esc(p.setor)} · ${esc(p.tel)}</small>${avariasDe(p.id).length ? ` <span class="tag rd">⚠ ${avariasDe(p.id).length} ${avariasDe(p.id).length === 1 ? 'avaria' : 'avarias'}</span>` : ''}</div></div>`).join('') + (restritos.length ? (list.length ? '' : `<p class="mu">Nenhuma pessoa autorizada encontrada${restritos.length > 1 ? ' para todos os itens restritos selecionados. Se for o caso, faça empréstimos separados' : '. Este item não pode ser emprestado a outra pessoa'}.</p>`) : `<div class="row"><span class="mu">Não encontrou?</span><button onclick="np()">＋ Cadastrar nova pessoa</button></div>`);
     }
     function ch(id) {
       const pessoa = appState.people.find((x) => x.id == id);
       appState.r.p = pessoa; appState.r.np = false;
       $('#nf').innerHTML = '';
       $('#sl').innerHTML = `<div class="sel">✔ ${esc(pessoa.nome)} · ${esc(pessoa.setor)} · ${esc(pessoa.tel)}</div>`;
+      ps();
     }
     function np() {
       appState.r.p = null; appState.r.np = true;
+      ps();
       $('#sl').innerHTML = '';
-      $('#nf').innerHTML = `<label>Nome<input id="nn" value="${esc($('#pq').value)}"></label><label>Telefone<input id="nt" ${TEL_ATTR}></label><label>Setor/Ministério<input id="ns"></label>`;
+      $('#nf').innerHTML = `<label>Nome<input id="nn" value="${esc($('#pq').value)}"></label><label>Telefone<input id="nt" ${TEL_ATTR}></label><label>Setor/Ministério${setorCampo('ns', '', appState.people)}</label>`;
     }
     function salvar() {
       const itens = appState.r.itens;
@@ -669,7 +741,7 @@
       if (appState.r.np) {
         const nome = $('#nn').value.trim();
         const tel = $('#nt').value.trim();
-        const setor = $('#ns').value.trim();
+        const setor = setorValor('ns', appState.people);
         if (!nome || !tel || !setor) return alert('Preencha nome, telefone e setor/ministério.');
         if (!telOk(tel)) return alert(telMsg(tel));
         pessoa = { id: nid(), nome, tel, setor, ativo: 1 };
